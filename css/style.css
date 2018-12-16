@@ -1,0 +1,10 @@
+#garage1{
+	position: absolute;
+	height: 100px;
+	width: 100px;
+	background: #0000ff;
+	left: 0px;
+	top: 0px;
+        color: yellow;
+	cursor: move;
+}
