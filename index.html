@@ -1,14 +1,18 @@
 <html>
-    <head></head>
+    <head>
+        <link rel="stylesheet" href="css/styles.css">
+    </head>
     <body>
         <p id="wallet">0</p>
-        <button id="newCar">New Car</button>
-        <div id="driveaway">GO GO GO</div>
-        <div id="garages">
-            <button id="garage1"><img src="img/carRed2_007.png"/></button>
+        <div id="garage1">
+            <img id="car1" src="img/carRed2_007.png"/>
+            <div id="spacer"></div>
+            <div id="progress">
+                <div class="concat" id="numerator">0</div>
+                <div class="concat" id="divider">/</div>
+                <div class="concat" id="denomenator">10</div>
+            </div>
         </div>
-        <div id="blackmagic">I can move</div>
-        <img src="img/carRed2_007.png"/>
         <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="

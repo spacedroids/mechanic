@@ -1,0 +1,22 @@
+html
+{
+	font-family: Helvetica;
+}
+#garage1{
+	position: absolute;
+	left: 200px;
+	top: 200px;
+}
+#spacer {
+	height: 27px;
+}
+#car1{
+	position: absolute;
+	cursor: pointer;
+	left: 0px;
+	top: 0px;
+}
+
+.concat {
+	display:inline-block;
+}
