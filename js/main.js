@@ -1,6 +1,32 @@
 //Internal vars
 let wallet = 0;
-let cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+const cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+
+class Car {
+    constructor(workNeeded, value) {
+        this.progress = 0;
+        this.workNeeded = workNeeded;
+        this.value = value;
+        this.img = getRandomElement(cars);
+        this.el$ = $('<img>').addClass('car').attr('id','car1').attr('src','img/'+this.img);
+    }
+    //Animate driving this car away
+    driveAway() {
+        let x = -this.el$.offset().left - this.el$.width();
+        let y = this.el$.offset().top;
+        this.el$.animate({left: x + "px", top: y + "px"}, 400, 'swing', this.delete);
+    }
+    //Return the HTML element that should represent this car
+    get html() {
+        if(this.el$ === null) {
+            this.el$ = $('<img>').addClass('car').attr('id','car1').attr('src','img/'+this.img);
+        }
+        return this.el$;
+    }
+    delete() {
+        //TODO
+    }
+}
 
 let car1Obj = {
     garage: "",
