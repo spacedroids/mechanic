@@ -8,6 +8,7 @@ let car1Obj = {
     workNeeded: 1,
     value: 100,
     img: "carRed2_007.png",
+    element: {},
     reset: function() {
         this.progress = 0;
         this.workNeeded++;
@@ -16,16 +17,25 @@ let car1Obj = {
         car1.style.left = "0px";
         car1.style.top = "0px";
     },
-    move: function() {
-        let left = parseInt( window.getComputedStyle(car1).getPropertyValue("left"));
-        let top = parseInt( window.getComputedStyle(car1).getPropertyValue("top"));
-        car1.style.left = left - 1 + "px";
-        car1.style.top = top + 1 + "px";
-        let offset = parseInt(window.getComputedStyle(garage1).getPropertyValue("left"));
-        if(left < -offset) {
-            this.garage.empty();
-        }
+    driveAway: function() {
+        this.element = $('#car1');
+        let x = -this.element.offset().left - this.element.width();
+        let y = this.element.offset().top;
+        this.element.animate({left: x + "px", top: y + "px"}, 400, 'swing', this.delete);
+
+        // let left = parseInt( window.getComputedStyle(car1).getPropertyValue("left"));
+        // let top = parseInt( window.getComputedStyle(car1).getPropertyValue("top"));
+        // car1.style.left = left - 1 + "px";
+        // car1.style.top = top + 1 + "px";
+        // let offset = parseInt(window.getComputedStyle(garage1).getPropertyValue("left"));
+        // if(left < -offset) {
+        //     this.garage.empty();
+        // }
     },
+    delete: function() {
+        this.element = $('#car1');
+        this.element.remove();
+    }
 };
 
 let garage1Obj = {
@@ -35,7 +45,6 @@ let garage1Obj = {
     progressDenomenator: $('#garage1 #progress #denomenator'),
     update: function() {
         if(this.status === "leaving") {
-            this.car.move();
         }
     },
     redraw: function() {
@@ -53,6 +62,7 @@ let garage1Obj = {
         if(this.car.progress >= this.car.workNeeded) {
             wallet += this.car.value;
             this.status = "leaving";
+            this.car.driveAway();
         }
     },
     newCar: function(car) {
