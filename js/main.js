@@ -86,9 +86,9 @@ let newCustomer = function() {
 
 //Event handlers
 $('#car1').click(() => garage1Obj.fix(1));
-// driveaway.onmousedown = function() {
-//     garage1Obj.status = "leaving";
-// }
+$('#oil #fill').click(() => { 
+    console.log($('#oil #fill').style.height);
+});
 
 //setup
 garage1Obj.newCar(car1Obj);

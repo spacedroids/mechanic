@@ -3,14 +3,22 @@
         <link rel="stylesheet" href="css/styles.css">
     </head>
     <body>
-        <p id="wallet">0</p>
-        <div id="garage1">
-            <img id="car1" src="img/carRed2_007.png"/>
-            <div id="spacer"></div>
-            <div id="progress">
-                <div class="concat" id="numerator">0</div>
-                <div class="concat" id="divider">/</div>
-                <div class="concat" id="denomenator">10</div>
+        <div id="header">
+            <p id="wallet">0</p>
+        </div>
+        <div id="game-container">
+            <div id="oil">
+                <div id="fill"></div>
+            </div>            
+            <div id="garages">
+                <div class="garage" id="garage1">
+                    <img class="car" id="car1" src="img/carRed2_007.png"/>
+                    <div id="progress">
+                        <span id="numerator">0</span>
+                        <span id="divider">/</span>
+                        <span id="denomenator">10</span>
+                    </div>
+                </div>    
             </div>
         </div>
         <script
