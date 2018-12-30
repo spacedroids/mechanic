@@ -45,7 +45,7 @@ let garage1Obj = {
         if(this.status === "leaving") {
         }
         else if(this.status === "empty") {
-            this.newCar(new Car(2, 100));
+            this.newCar(new Car(getRandomInt(3)+1, 100));
             this.status = "repairing";
         }
     },

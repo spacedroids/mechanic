@@ -1,15 +1,14 @@
 <html>
     <head>
         <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/loading-bar.css">
     </head>
     <body>
         <div id="header">
             <p id="wallet">0</p>
         </div>
         <div id="game-container">
-            <div id="oil">
-                <div id="fill"></div>
-            </div>            
+            <div class="ldBar" id=oil data-preset="energy"></div>
             <div id="garages">
                 <div class="garage" id="garage1">
                     <div id="progress">
@@ -24,6 +23,7 @@
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
+        <script src="js/loading-bar.js"></script>
         <script src="js/helper.js"></script>
         <script src="js/main.js"></script>
     </body>

@@ -19,18 +19,6 @@ html
 	height: 300px;
 	width: 600px;
 }
-#oil{
-	border: 1px solid red;
-	margin: 2px;
-	width: 20px;
-	height: 20px;
-}
-#oil #fill {
-	height: 50%;
-	margin: 1px;
-	background-color: black;
-	vertical-align: bottom;
-}
 #garages{
 	display: flex;
 	border: 2px solid red;
@@ -41,4 +29,7 @@ html
 .car{
 	cursor: pointer;
 	/* position: relative; */
+}
+#oil .ldBar-label {
+	display: none;
 }
