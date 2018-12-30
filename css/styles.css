@@ -38,7 +38,7 @@ html
 .garage{
 	border: 2px solid yellow;
 }
-#car1{
+.car{
 	cursor: pointer;
 	position: relative;
 }
