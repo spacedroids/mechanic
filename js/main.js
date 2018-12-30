@@ -18,9 +18,12 @@ class Car {
     }
     //Animate driving this car away
     driveAway() {
+        this.el$.css('position', 'absolute');
+        let left = this.el$.offset().left;
+        this.el$.css('left', left);
         let x = -this.el$.offset().left - this.el$.width();
-        let y = this.el$.offset().top;
-        this.el$.animate({left: x + "px", top: y + "px"}, 400, 'swing', () => { this.delete() });
+        let y = this.el$.offset().left;
+        this.el$.animate({left: x, top: y*2}, 1200, 'swing', () => { this.delete() });
     }
     //Return the HTML element that should represent this car
     get html() {

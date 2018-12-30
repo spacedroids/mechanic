@@ -40,5 +40,5 @@ html
 }
 .car{
 	cursor: pointer;
-	position: relative;
+	/* position: relative; */
 }
