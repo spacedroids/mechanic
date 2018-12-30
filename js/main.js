@@ -91,9 +91,21 @@ let redraw = function() {
     garage1Obj.redraw();
 };
 
+let oilLevel = 0;
 //Event handlers
-$('#oil #fill').click(() => { 
-    console.log($('#oil #fill').style.height);
+$('#oil').click(() => { 
+    const oilCost = 10;
+    /* Check cost and deduct money */
+    if(wallet >= oilCost) {
+        wallet -= oilCost;
+    } else {return;}
+    /* Adjust oil level of variable & progress bar UI */
+    //Loading bar for oil. Use .set() to set to value up to 100
+    let oilLdBar = document.getElementById('oil').ldBar;
+    oilLevel = Math.min(oilLevel + 10, 100);
+    let currentOil = oilLevel;//$('#oil .ldbar-label').text(); //this updates over many frames
+    console.log(parseInt(currentOil));
+    oilLdBar.set(parseInt(currentOil)+10);
 });
 
 //Game loop
