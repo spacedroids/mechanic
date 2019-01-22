@@ -36,9 +36,10 @@ class Wallet {
 }
 
 class Car {
-    constructor(workNeeded, value) {
+    constructor(workNeeded, value, supplies={}) {
         this.progress = 0;
         this.workNeeded = workNeeded;
+        this.suppliesNeeded = supplies;
         this.value = value;
         this.img = getRandomElement(cars);
         this.id = uniqueId();
@@ -74,6 +75,7 @@ class Supply {
         console.log("you bought something");
     }
     add() {}
+    take() {}
     update() {}
     redraw() {}
     checkMax() {
@@ -104,34 +106,41 @@ class verticalSupply extends Supply {
         if(this.wallet.withdraw(this.cost * units)) {
             /* Adjust oil level of variable & progress bar UI */
             this.amount += units;
-            this.setProgressBar(this.amount);
         }
     }
-    setProgressBar(newValue) {
-        this.$el.find('.progress-bar').css("height", `${newValue}%`);
-    };    
-    
+    take(units=1) {
+        if(this.amount >= units) {
+            this.amount -= units;
+            return true;
+        }
+        return false;
+    }
+    redraw() {
+        this.$el.find('.progress-bar').css("height", `${this.amount}%`);
+    }
 }
 
 class Garage {
-    constructor($parent, wallet) {
+    constructor($parent, wallet, oilSupply) {
         this.$el = $(`<div class="garage" id="garage1">
         <div>
            <span class="numerator">0</span>
            <span class="divider">/</span>
            <span class="denominator">10</span>
         </div>
+        <div class="supply-needs">nothing</div>
      </div>`);
         $parent.append(this.$el);
         this.car = null;
         this.wallet = wallet;
         this.status = "empty";
+        this.oilSupply = oilSupply;
     }
     update() {
         if(this.status === "leaving") {
         }
         else if(this.status === "empty") {
-            this.newCar(new Car(getRandomInt(3)+1, 100));
+            this.newCar(carGenerator());
             this.status = "repairing";
         }
     }
@@ -139,6 +148,12 @@ class Garage {
         if(this.car) {
             this.$el.find('.numerator').text(this.car.progress);
             this.$el.find('.denominator').text(this.car.workNeeded);
+            if(this.car.suppliesNeeded.oil) {
+                this.$el.find('.supply-needs').text(this.car.suppliesNeeded.oil + "Oil");
+                this.$el.find('.supply-needs').show();
+            } else {
+                this.$el.find('.supply-needs').hide();
+            }
         }
     }
     newCar(car) {
@@ -151,7 +166,15 @@ class Garage {
         if(!this.car) {
             return;
         }
-        this.car.progress += unit;
+        if(this.car.suppliesNeeded.oil) {
+            this.oilSupply.take(1);
+            this.car.suppliesNeeded.oil -= 1;
+            if(this.car.suppliesNeeded.oil === 0) {
+                delete this.car.suppliesNeeded.oil;
+            }
+        } else {
+            this.car.progress += unit;
+        }
         if(this.car.progress >= this.car.workNeeded) {
             this.wallet.deposit(this.car.value);
             this.status = "leaving";
@@ -163,6 +186,13 @@ class Garage {
         this.status = "empty";
     }
 }
+
+let carGenerator = function() {
+    if(getRandomInt(3) === 0) {
+        return new Car(3, 200, {"oil": 2});
+    }
+    return new Car(getRandomInt(3)+1, 100);
+};
 
 //Helper methods/game logic
 let update = function(objects) {
@@ -181,8 +211,8 @@ let redraw = function(objects) {
 $(function() {
     let gameObjects = [];
     let wallet = new Wallet($('#header'));
-    let garage1 = new Garage($('#garages'), wallet);
-    let oilSupply = new verticalSupply($('#supplies'), 100, 1, wallet);
+    let oilSupply = new verticalSupply($('#supplies'), 100, 1, wallet, 50);
+    let garage1 = new Garage($('#garages'), wallet, oilSupply);
     gameObjects.push(wallet);
     gameObjects.push(garage1);
     gameObjects.push(oilSupply);
