@@ -1,10 +1,37 @@
+'use strict';
+
 //Internal vars
-let wallet = 0;
 const cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
 
 let _idcounter = 0;
 window.uniqueId = function(){
     return 'myid-' + _idcounter++
+}
+
+class Wallet {
+    constructor($parent, funds=0) {
+        this.funds = funds;
+        this.$el = $(`<p id="wallet">${funds}</p>`);
+        $parent.append(this.$el);
+        this.redraw();
+    }
+    withdraw(cost) {
+        if(this.funds >= cost) {
+            this.funds = this.funds - cost;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    deposit(amount) {
+        this.funds += amount;
+    }
+    getBalance() {
+        return this.funds;
+    }
+    redraw() {
+        this.$el.text(this.funds);
+    }
 }
 
 class Car {
@@ -35,9 +62,23 @@ class Car {
     }
 }
 
+class Supply {
+    constructor(max, cost, wallet) {
+        this.amount = 0;
+        this.max = max;
+        this.cost = cost;
+        this.wallet = wallet;
+    }
+    buy() {
+        
+    }
+    add() {}
+}
+
 let garage1Obj = {
     el$: $('#garage1'),
     car: null,
+    wallet: null,
     status: "empty",
     progressNumerator: $('#garage1 #progress #numerator'),
     progressDenomenator: $('#garage1 #progress #denomenator'),
@@ -61,7 +102,7 @@ let garage1Obj = {
         }
         this.car.progress += unit;
         if(this.car.progress >= this.car.workNeeded) {
-            wallet += this.car.value;
+            this.wallet.deposit(this.car.value);
             this.status = "leaving";
             this.car.driveAway();
             this.status = "empty";
@@ -78,22 +119,24 @@ let garage1Obj = {
     },
 };
 
-//Display elements
-let walletEl = $('#wallet');
-
 //Helper methods/game logic
 let update = function() {
     garage1Obj.update();
 }
 
-let redraw = function() {
-    walletEl.text(wallet);
-    garage1Obj.redraw();
+let redraw = function(objects) {
+    objects.forEach(function(obj) {
+        obj.redraw();
+    })
+};
+
+let setProgressBar = function($progressBar, newValue) {
+    $progressBar.css("height", `${newValue}%`);
 };
 
 let oilLevel = 0;
 //Event handlers
-$('#oil').click(() => { 
+$('#oil').click(function() { 
     const oilCost = 10;
     /* Check cost and deduct money */
     if(wallet >= oilCost) {
@@ -101,15 +144,24 @@ $('#oil').click(() => {
     } else {return;}
     /* Adjust oil level of variable & progress bar UI */
     //Loading bar for oil. Use .set() to set to value up to 100
-    let oilLdBar = document.getElementById('oil').ldBar;
     oilLevel = Math.min(oilLevel + 10, 100);
     let currentOil = oilLevel;//$('#oil .ldbar-label').text(); //this updates over many frames
+    console.log(this);
     console.log(parseInt(currentOil));
-    oilLdBar.set(parseInt(currentOil)+10);
+    setProgressBar($(this).find('.progress-bar'), parseInt(currentOil)+10);
 });
 
-//Game loop
-window.setInterval(function(){
-    update();
-    redraw();
-}, 1);
+//Document ready and main execution
+$(function() {
+    let gameObjects = [];
+    let wallet = new Wallet($('#header'));
+    gameObjects.push(wallet);
+    garage1Obj.wallet = wallet;
+    gameObjects.push(garage1Obj);
+
+    //Game loop
+    window.setInterval(function(){
+        update();
+        redraw(gameObjects);
+    }, 1);
+});

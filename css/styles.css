@@ -6,7 +6,6 @@ body {
 	padding-top: 5rem;
 }
 #header {
-	height: 100px;
 	border: 1px solid blue;
 }
 #game-container {
@@ -28,11 +27,31 @@ body {
 	cursor: pointer;
 	/* position: relative; */
 }
-#oil .ldBar-label {
-	display: none;
-}
 .starter-template {
 	padding: 3rem 1.5rem;
 	text-align: center;
 }
+#oil {
+	width: 100px;
+}
+
+.progress-bar-vertical {
+	width: 20px;
+	min-height: 100px;
+	margin-right: 20px;
+	float: left;
+	display: -webkit-box;  /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+	display: -ms-flexbox;  /* TWEENER - IE 10 */
+	display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+	display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+	align-items: flex-end;
+	-webkit-align-items: flex-end; /* Safari 7.0+ */
+ }
  
+ .progress-bar-vertical .progress-bar {
+	width: 100%;
+	height: 0;
+	-webkit-transition: height 0.6s ease;
+	-o-transition: height 0.6s ease;
+	transition: height 0.6s ease;
+ }
