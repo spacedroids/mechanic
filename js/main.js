@@ -120,6 +120,23 @@ class VerticalSupply extends Supply {
     }
 }
 
+class MechanicUpgrade {
+    constructor($parent, wallet, cost) {
+        this.$el = $('<div>Hire</div>');
+        this.wallet = wallet;
+        this.cost = cost;
+        $parent.append(this.$el);
+        this.$el.click(() => { this.hire(); });
+    }
+    hire() {
+        if(this.wallet.withdraw(this.cost)) {
+            console.log("you're hired");
+        } else {
+            return;
+        }
+    }
+}
+
 class Garage {
     constructor($parent, wallet, oilSupply) {
         this.$el = $(`<div class="garage" id="garage1">
@@ -215,6 +232,7 @@ $(function() {
     let wallet = new Wallet($('#header'));
     let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
     let garage1 = new Garage($('#garages'), wallet, oilSupply);
+    let mechanicUpgrades = new MechanicUpgrade($('#upgrades'), wallet, 1);
     gameObjects.push(wallet);
     gameObjects.push(garage1);
     gameObjects.push(oilSupply);
