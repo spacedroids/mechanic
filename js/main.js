@@ -167,7 +167,9 @@ class Garage {
             return;
         }
         if(this.car.suppliesNeeded.oil) {
-            this.oilSupply.take(1);
+            if(!this.oilSupply.take(1)) {
+                return; //not enough oil
+            }
             this.car.suppliesNeeded.oil -= 1;
             if(this.car.suppliesNeeded.oil === 0) {
                 delete this.car.suppliesNeeded.oil;
