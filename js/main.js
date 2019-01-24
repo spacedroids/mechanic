@@ -98,7 +98,7 @@ class VerticalSupply extends Supply {
             if(this.checkMax()) {
                 return;
             }
-            this.buy(10);
+            this.buy(5);
         });
     }
     buy(units=1) {
@@ -130,7 +130,9 @@ class MechanicUpgrade {
     }
     hire() {
         if(this.wallet.withdraw(this.cost)) {
-            console.log("you're hired");
+            let bob = new Mechanic($('#upgrades'), gc.wallet);
+            gc.mechanics.push(bob);
+            gc.gameObjects.push(bob);
         } else {
             return;
         }
@@ -139,7 +141,7 @@ class MechanicUpgrade {
 
 class Mechanic {
     constructor($parent, wallet) {
-        this.$el = $('<div>');
+        this.$el = $('<div>Bob</div>');
         this.wallet = wallet;
         $parent.append(this.$el);
     }
@@ -250,7 +252,7 @@ $(function() {
     let wallet = new Wallet($('#header'));
     let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
     let garage1 = new Garage($('#garages'), wallet, oilSupply);
-    let mechanicUpgrades = new MechanicUpgrade($('#upgrades'), wallet, 1);
+    let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), wallet, 1);
     gc.gameObjects.push(wallet);
     gc.wallet = wallet;
     gc.gameObjects.push(garage1);
