@@ -137,6 +137,18 @@ class MechanicUpgrade {
     }
 }
 
+class Mechanic {
+    constructor($parent, wallet) {
+        this.$el = $('<div>');
+        this.wallet = wallet;
+        $parent.append(this.$el);
+    }
+    update() {
+        gc.garages[0].fix(1);
+    }
+    redraw() {}
+}
+
 class Garage {
     constructor($parent, wallet, oilSupply) {
         this.$el = $(`<div class="garage" id="garage1">
@@ -226,20 +238,28 @@ let redraw = function(objects) {
     })
 };
 
+let gc = { //Game controller global
+    "wallet": {},
+    "garages": [],
+    "mechanics": [],
+    "gameObjects": [],
+};
+
 //Document ready and main execution
 $(function() {
-    let gameObjects = [];
     let wallet = new Wallet($('#header'));
     let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
     let garage1 = new Garage($('#garages'), wallet, oilSupply);
     let mechanicUpgrades = new MechanicUpgrade($('#upgrades'), wallet, 1);
-    gameObjects.push(wallet);
-    gameObjects.push(garage1);
-    gameObjects.push(oilSupply);
+    gc.gameObjects.push(wallet);
+    gc.wallet = wallet;
+    gc.gameObjects.push(garage1);
+    gc.garages.push(garage1);
+    gc.gameObjects.push(oilSupply);
 
     //Game loop
     window.setInterval(function(){
-        update(gameObjects);
-        redraw(gameObjects);
+        update(gc.gameObjects);
+        redraw(gc.gameObjects);
     }, 1);
 });
