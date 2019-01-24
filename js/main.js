@@ -83,7 +83,7 @@ class Supply {
     }
 }
 
-class verticalSupply extends Supply {
+class VerticalSupply extends Supply {
     constructor($parent, max, cost, wallet, amount=0) {
         super(max, cost, wallet, amount);
         this.$el = $(`
@@ -116,7 +116,7 @@ class verticalSupply extends Supply {
         return false;
     }
     redraw() {
-        this.$el.find('.progress-bar').css("height", `${this.amount}%`);
+        this.$el.find('.progress-bar').css("height", `${(this.amount / this.max) * 100}%`);
     }
 }
 
@@ -211,7 +211,7 @@ let redraw = function(objects) {
 $(function() {
     let gameObjects = [];
     let wallet = new Wallet($('#header'));
-    let oilSupply = new verticalSupply($('#supplies'), 100, 1, wallet, 50);
+    let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
     let garage1 = new Garage($('#garages'), wallet, oilSupply);
     gameObjects.push(wallet);
     gameObjects.push(garage1);
