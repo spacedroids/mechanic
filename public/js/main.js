@@ -21,9 +21,12 @@ window.uniqueId = function(){
 }
 
 class Wallet {
-    constructor($parent, funds=0) {
+    constructor($parent, funds=0, saveData) {
         this.funds = funds;
         this.$el = $(`<p id="wallet">${funds}</p>`);
+        if(saveData) {
+            Object.assign(this, saveData);
+        }
         $parent.append(this.$el);
         this.redraw();
     }
@@ -252,33 +255,60 @@ let redraw = function(objects) {
     })
 };
 
-let gc = { //Game controller global
-    "wallet": {},
-    "garages": [],
-    "mechanics": [],
-    "gameObjects": [],
-};
+class GameController {
+    constructor() {
+        this.wallet = {};
+        this.garages = [];
+        this.mechanics = [];
+        this.gameObjects = [];
+    }
+    loadGame(saveFile={}) {
+        this.resetDom();
+        let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
+        let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
+        let garage1 = new Garage($('#garages'), wallet, oilSupply);
+        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), wallet, 1);
+        this.gameObjects.push(wallet);
+        this.wallet = wallet;
+        this.gameObjects.push(garage1);
+        this.garages.push(garage1);
+        this.gameObjects.push(oilSupply);
+    }
+    resetDom() {
+        $('.game-state').empty();
+    }
+}
+
+const serialize = function(object) {
+    //First make a copy because we need to remove a few children before we pack it up to send for saving
+    let copy = $.extend({}, object);
+    delete copy.$el;
+    return copy;
+}
+
+const createSaveFile = function(wallet) {
+    return {
+        "wallet": serialize(wallet),
+    }
+}
+
+let gc = new GameController();
 
 //Document ready and main execution
 $(function() {
     $('.save-game').click(function() {
-        let userSaveFile = userSavesDB.ref('test_user');
-        userSaveFile.push({
-            oil: oilSupply.amount,
-            funds: wallet.getBalance(),
+        let userSaveBucket = userSavesDB.ref('test_user2');
+        userSaveBucket.set(createSaveFile(gc.wallet));
+    });
+    $('.load-game').click(function() {
+        let userSaveBucket = userSavesDB.ref('test_user2');
+        userSavesDB.ref('test_user2').once('value').then(function(saveFile) {
+            gc = new GameController();
+            gc.loadGame(saveFile.val());
         });
     });
-    $('.load-game').click(function() {});
 
-    let wallet = new Wallet($('#header'));
-    let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
-    let garage1 = new Garage($('#garages'), wallet, oilSupply);
-    let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), wallet, 1);
-    gc.gameObjects.push(wallet);
-    gc.wallet = wallet;
-    gc.gameObjects.push(garage1);
-    gc.garages.push(garage1);
-    gc.gameObjects.push(oilSupply);
+    gc.loadGame();
 
     //Game loop
     window.setInterval(function(){
