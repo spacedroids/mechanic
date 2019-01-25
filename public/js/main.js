@@ -1,5 +1,17 @@
 'use strict';
 
+// Initialize Firebase
+const config = {
+    apiKey: "AIzaSyCFs2JP217VB5o7PzKhxqZDv1B7XmU02tg",
+    authDomain: "mechanic-clicker.firebaseapp.com",
+    databaseURL: "https://mechanic-clicker.firebaseio.com",
+    projectId: "mechanic-clicker",
+    storageBucket: "mechanic-clicker.appspot.com",
+    messagingSenderId: "610150464775"
+};
+firebase.initializeApp(config);
+let userSavesDB = firebase.database();
+
 //Internal vars
 const cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
 
@@ -249,6 +261,15 @@ let gc = { //Game controller global
 
 //Document ready and main execution
 $(function() {
+    $('.save-game').click(function() {
+        let userSaveFile = userSavesDB.ref('test_user');
+        userSaveFile.push({
+            oil: oilSupply.amount,
+            funds: wallet.getBalance(),
+        });
+    });
+    $('.load-game').click(function() {});
+
     let wallet = new Wallet($('#header'));
     let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
     let garage1 = new Garage($('#garages'), wallet, oilSupply);
