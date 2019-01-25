@@ -19,15 +19,29 @@ let _idcounter = 0;
 window.uniqueId = function(){
     return 'myid-' + _idcounter++
 }
-
-class Wallet {
-    constructor($parent, funds=0, saveData) {
-        this.funds = funds;
-        this.$el = $(`<p id="wallet">${funds}</p>`);
+class GameObject {
+    constructor() {}
+    loadSaveData(saveData) {
         if(saveData) {
             Object.assign(this, saveData);
         }
-        $parent.append(this.$el);
+    }
+    attach($parent) {
+        if($parent) {
+            $parent.append(this.$el);
+        }
+    }
+    update() {}
+    redraw() {}
+}
+
+class Wallet extends GameObject {
+    constructor($parent, funds=0, saveData) {
+        super();
+        this.funds = funds;
+        this.$el = $(`<p id="wallet">${funds}</p>`);
+        this.loadSaveData(saveData);
+        this.attach($parent);
         this.redraw();
     }
     withdraw(cost) {
@@ -44,7 +58,6 @@ class Wallet {
     getBalance() {
         return this.funds;
     }
-    update() {}
     redraw() {
         this.$el.text(this.funds);
     }
@@ -79,28 +92,26 @@ class Car {
     }
 }
 
-class Supply {
-    constructor(max, cost, wallet, amount) {
+class Supply extends GameObject {
+    constructor(max, cost, amount, saveData) {
+        super();
         this.amount = amount;
         this.max = max;
         this.cost = cost;
-        this.wallet = wallet;
     }
     buy(units=1) {
         console.log("you bought something");
     }
     add() {}
     take() {}
-    update() {}
-    redraw() {}
     checkMax() {
         return this.amount >= this.max;
     }
 }
 
 class VerticalSupply extends Supply {
-    constructor($parent, max, cost, wallet, amount=0) {
-        super(max, cost, wallet, amount);
+    constructor($parent, max, cost, amount=0, saveData=0) {
+        super(max, cost, amount);
         this.$el = $(`
         <div>
         <div class="progress progress-bar-vertical">
@@ -118,7 +129,7 @@ class VerticalSupply extends Supply {
     }
     buy(units=1) {
         /* Check cost and deduct money */
-        if(this.wallet.withdraw(this.cost * units)) {
+        if(gc.wallet.withdraw(this.cost * units)) {
             /* Adjust oil level of variable & progress bar UI */
             this.amount += units;
         }
@@ -260,16 +271,18 @@ class GameController {
         this.wallet = {};
         this.garages = [];
         this.mechanics = [];
+        this.oilSupply = {};
         this.gameObjects = [];
     }
     loadGame(saveFile={}) {
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
-        let oilSupply = new VerticalSupply($('#supplies'), 10, 10, wallet, 5);
+        let oilSupply = new VerticalSupply($('#supplies'), 10, 10, 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
         let garage1 = new Garage($('#garages'), wallet, oilSupply);
         let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), wallet, 1);
         this.gameObjects.push(wallet);
         this.wallet = wallet;
+        this.oilSupply = oilSupply;
         this.gameObjects.push(garage1);
         this.garages.push(garage1);
         this.gameObjects.push(oilSupply);
@@ -282,13 +295,15 @@ class GameController {
 const serialize = function(object) {
     //First make a copy because we need to remove a few children before we pack it up to send for saving
     let copy = $.extend({}, object);
+    //Delete the jquery ref to the DOM, don't want to be part of save
     delete copy.$el;
     return copy;
 }
 
-const createSaveFile = function(wallet) {
+const createSaveFile = function(wallet, oilSupply) {
     return {
         "wallet": serialize(wallet),
+        "oilSupply": serialize(oilSupply),
     }
 }
 
@@ -298,7 +313,7 @@ let gc = new GameController();
 $(function() {
     $('.save-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
-        userSaveBucket.set(createSaveFile(gc.wallet));
+        userSaveBucket.set(createSaveFile(gc.wallet, gc.oilSupply));
     });
     $('.load-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
