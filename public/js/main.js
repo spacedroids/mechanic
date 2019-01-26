@@ -129,7 +129,7 @@ class VerticalSupply extends Supply {
     }
     buy(units=1) {
         /* Check cost and deduct money */
-        if(gc.wallet.withdraw(this.cost * units)) {
+        if(gc.gameobjects.wallet.withdraw(this.cost * units)) {
             /* Adjust oil level of variable & progress bar UI */
             this.amount += units;
         }
@@ -147,18 +147,16 @@ class VerticalSupply extends Supply {
 }
 
 class MechanicUpgrade {
-    constructor($parent, wallet, cost) {
+    constructor($parent, cost) {
         this.$el = $('<div>Hire</div>');
-        this.wallet = wallet;
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.hire(); });
     }
     hire() {
-        if(this.wallet.withdraw(this.cost)) {
-            let bob = new Mechanic($('#upgrades'), gc.wallet);
-            gc.mechanics.push(bob);
-            gc.gameObjects.push(bob);
+        if(gc.gameobjects.wallet.withdraw(this.cost)) {
+            let bob = new Mechanic($('#upgrades'));
+            gc.gameobjects.mechanics.push(bob);
         } else {
             return;
         }
@@ -166,19 +164,18 @@ class MechanicUpgrade {
 }
 
 class Mechanic {
-    constructor($parent, wallet) {
+    constructor($parent) {
         this.$el = $('<div>Bob</div>');
-        this.wallet = wallet;
         $parent.append(this.$el);
     }
     update() {
-        gc.garages[0].fix(1);
+        gc.gameobjects.garages[0].fix(1);
     }
     redraw() {}
 }
 
 class Garage {
-    constructor($parent, wallet, oilSupply) {
+    constructor($parent) {
         this.$el = $(`<div class="garage" id="garage1">
         <div>
            <span class="numerator">0</span>
@@ -189,9 +186,7 @@ class Garage {
      </div>`);
         $parent.append(this.$el);
         this.car = null;
-        this.wallet = wallet;
         this.status = "empty";
-        this.oilSupply = oilSupply;
     }
     update() {
         if(this.status === "leaving") {
@@ -224,7 +219,7 @@ class Garage {
             return;
         }
         if(this.car.suppliesNeeded.oil) {
-            if(!this.oilSupply.take(1)) {
+            if(!gc.gameobjects.oilSupply.take(1)) {
                 return; //not enough oil
             }
             this.car.suppliesNeeded.oil -= 1;
@@ -235,7 +230,7 @@ class Garage {
             this.car.progress += unit;
         }
         if(this.car.progress >= this.car.workNeeded) {
-            this.wallet.deposit(this.car.value);
+            gc.gameobjects.wallet.deposit(this.car.value);
             this.status = "leaving";
             this.car.driveAway();
             this.status = "empty";
@@ -253,39 +248,55 @@ let carGenerator = function() {
     return new Car(getRandomInt(3)+1, 100);
 };
 
-//Helper methods/game logic
-let update = function(objects) {
-    objects.forEach(function(obj) {
-        obj.update();
-    })
+//The objects list passed in contains both single objects and arrays of objects
+const update = function(objects) {
+    for (let key in objects) {
+        let object = objects[key];
+        if(Array.isArray(object)) {
+            //If it's an array of objects, loop through and update each one
+            object.forEach(function (element) {
+                element.update();
+            })
+        } else {
+            //Otherwise just update that one object
+            object.update();
+        }
+    }
 }
 
-let redraw = function(objects) {
-    objects.forEach(function(obj) {
-        obj.redraw();
-    })
-};
+const redraw = function(objects) {
+    for (let key in objects) {
+        let object = objects[key];
+        if(Array.isArray(object)) {
+            //If it's an array of objects, loop through and update each one
+            object.forEach(function (element) {
+                element.redraw();
+            })
+        } else {
+            //Otherwise just update that one object
+            object.redraw();
+        }
+    }
+}
 
 class GameController {
     constructor() {
-        this.wallet = {};
-        this.garages = [];
-        this.mechanics = [];
-        this.oilSupply = {};
-        this.gameObjects = [];
+        this.gameobjects = {
+            "garages": [],
+            "mechanics": [],
+        };
     }
     loadGame(saveFile={}) {
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
         let oilSupply = new VerticalSupply($('#supplies'), 10, 10, 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
-        let garage1 = new Garage($('#garages'), wallet, oilSupply);
-        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), wallet, 1);
-        this.gameObjects.push(wallet);
-        this.wallet = wallet;
+        let garage1 = new Garage($('#garages'), oilSupply);
+        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), 1);
+        //TODO: Put these objects into a list
         this.oilSupply = oilSupply;
-        this.gameObjects.push(garage1);
-        this.garages.push(garage1);
-        this.gameObjects.push(oilSupply);
+        this.gameobjects.wallet = wallet;
+        this.gameobjects.garages.push(garage1);
+        this.gameobjects.oilSupply = oilSupply;
     }
     resetDom() {
         $('.game-state').empty();
@@ -313,7 +324,7 @@ let gc = new GameController();
 $(function() {
     $('.save-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
-        userSaveBucket.set(createSaveFile(gc.wallet, gc.oilSupply));
+        userSaveBucket.set(createSaveFile(gc.gameobjects.wallet, gc.gameobjects.oilSupply));
     });
     $('.load-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
@@ -327,7 +338,7 @@ $(function() {
 
     //Game loop
     window.setInterval(function(){
-        update(gc.gameObjects);
-        redraw(gc.gameObjects);
+        update(gc.gameobjects);
+        redraw(gc.gameobjects);
     }, 1);
 });
