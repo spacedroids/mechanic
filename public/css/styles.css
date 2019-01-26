@@ -6,26 +6,35 @@ body {
 	padding-top: 5rem;
 }
 #header {
-	border: 1px solid blue;
+	/* border: 1px solid blue; */
 }
 #game-container {
 	display: flex;
 	justify-content: center;
-	align-items: center;
-	border: 1px solid green;
+	align-items: top;
+	/* border: 1px solid green; */
+	padding: 20px;
 	height: 300px;
 	width: 600px;
 }
 #garages{
 	display: flex;
-	border: 2px solid red;
+	/* border: 2px solid red; */
 }
 .garage{
-	border: 2px solid yellow;
+	/* border: 2px solid yellow; */
 }
 .car{
 	cursor: pointer;
 	/* position: relative; */
+}
+.mechanic{
+	padding: 5px;
+   text-align: center;
+}
+.mechanic-sprite{
+	width: 15px;
+	height: 28px;
 }
 .starter-template {
 	padding: 3rem 1.5rem;

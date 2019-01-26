@@ -173,7 +173,7 @@ class MechanicUpgrade {
 
 class Mechanic {
     constructor($parent) {
-        this.$el = $('<div>Bob</div>');
+        this.$el = $('<div class="mechanic"><img class="mechanic-sprite" src="img/mechanics/1-idle-se.png"/><div>Bob</div></div>');
         $parent.append(this.$el);
     }
     update() {

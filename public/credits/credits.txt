@@ -1,3 +1,8 @@
+Worker Sprites from:
+https://opengameart.org/content/pixel-worker-sprite-fukushima
+
+Car sprites from:
+https://www.kenney.nl/assets/isometric-vehicles
 
 Things I learned
 • Implementing the save functionality early helped me realize I needed to think through how I would serialize the state of the app. This led me to formalize a single place where I could store all the game objects in a way that they could be saved/loaded, but also iterated on to update and redraw as part of the game loop. This double purpose structure is very valuable.
