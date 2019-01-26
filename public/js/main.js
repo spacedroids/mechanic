@@ -104,8 +104,12 @@ class Supply extends GameObject {
     }
     add() {}
     take() {}
-    checkMax() {
+    //Check if this supply is full
+    isFull() {
         return this.amount >= this.max;
+    }
+    canFit() {
+        return this.max - this.amount;
     }
 }
 
@@ -121,19 +125,23 @@ class VerticalSupply extends Supply {
         </div>`);
         $parent.append(this.$el);
         this.$el.click(() => {
-            if(this.checkMax()) {
+            if(this.isFull()) {
                 return;
             }
             this.buy(5);
         });
     }
+    //Buy more units and add them to this supply
     buy(units=1) {
+        /* Check how many can fit */
+        units = Math.min(units, this.canFit());
         /* Check cost and deduct money */
         if(gc.gameobjects.wallet.withdraw(this.cost * units)) {
             /* Adjust oil level of variable & progress bar UI */
             this.amount += units;
         }
     }
+    //Remove units from this supply
     take(units=1) {
         if(this.amount >= units) {
             this.amount -= units;
