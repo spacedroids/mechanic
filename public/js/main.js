@@ -175,11 +175,17 @@ class MechanicUpgrade extends Supply {
 
 class Mechanic {
     constructor($parent) {
+        this.speed = 0.007;
+        this.counter = 0;
         this.$el = $('<div class="mechanic"><img class="mechanic-sprite" src="img/mechanics/1-idle-se.png"/><div>Bob</div></div>');
         $parent.append(this.$el);
     }
     update() {
-        gc.gameobjects.garages[0].fix(1);
+        this.counter++;
+        if(this.counter * this.speed >= 1) {
+            this.counter = 0;
+            gc.gameobjects.garages[0].fix(1);
+        }
     }
     redraw() {}
 }
