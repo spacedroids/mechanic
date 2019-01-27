@@ -99,15 +99,36 @@ class Supply extends GameObject {
         this.max = max;
         this.cost = cost;
     }
+    //Buy more units and add them to this supply
     buy(units=1) {
-        console.log("you bought something");
+        //Check how many can fit
+        units = Math.min(units, this.canFit());
+        if(units === 0) {
+            return false;
+        }
+        //Check cost and deduct money
+        if(gc.gameobjects.wallet.withdraw(this.cost * units)) {
+            //Add purchased units to the supply
+            this.amount += units;
+        } else {
+            return false;
+        }
+        return true;
     }
     add() {}
-    take() {}
+    //Remove units from this supply
+    take(units=1) {
+        if(this.amount >= units) {
+            this.amount -= units;
+            return true;
+        }
+        return false;
+    }
     //Check if this supply is full
     isFull() {
         return this.amount >= this.max;
     }
+    //Return how many more can fit
     canFit() {
         return this.max - this.amount;
     }
@@ -131,42 +152,23 @@ class VerticalSupply extends Supply {
             this.buy(5);
         });
     }
-    //Buy more units and add them to this supply
-    buy(units=1) {
-        /* Check how many can fit */
-        units = Math.min(units, this.canFit());
-        /* Check cost and deduct money */
-        if(gc.gameobjects.wallet.withdraw(this.cost * units)) {
-            /* Adjust oil level of variable & progress bar UI */
-            this.amount += units;
-        }
-    }
-    //Remove units from this supply
-    take(units=1) {
-        if(this.amount >= units) {
-            this.amount -= units;
-            return true;
-        }
-        return false;
-    }
     redraw() {
         this.$el.find('.progress-bar').css("height", `${(this.amount / this.max) * 100}%`);
     }
 }
 
-class MechanicUpgrade {
-    constructor($parent, cost) {
+class MechanicUpgrade extends Supply {
+    constructor($parent, max, cost, amount=0, saveData=0) {
+        super(max, cost, amount);
         this.$el = $('<div>Hire</div>');
         this.cost = cost;
         $parent.append(this.$el);
-        this.$el.click(() => { this.hire(); });
+        this.$el.click(() => { this.buy(); });
     }
-    hire() {
-        if(gc.gameobjects.wallet.withdraw(this.cost)) {
+    buy() {
+        if(super.buy()) {
             let bob = new Mechanic($('#upgrades'));
             gc.gameobjects.mechanics.push(bob);
-        } else {
-            return;
         }
     }
 }
@@ -299,9 +301,8 @@ class GameController {
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
         let oilSupply = new VerticalSupply($('#supplies'), 10, 10, 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
         let garage1 = new Garage($('#garages'), oilSupply);
-        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), 1);
-        //TODO: Put these objects into a list
-        this.oilSupply = oilSupply;
+        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), 2, 100);
+        //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
         this.gameobjects.garages.push(garage1);
         this.gameobjects.oilSupply = oilSupply;
