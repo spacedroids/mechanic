@@ -26,11 +26,6 @@ const PROFIT_MARGIN = 0.1;
 const BASE_SHOP_RATE = 100;
 const MECHANIC_HIRE = 1000;
 
-let _idcounter = 0;
-window.uniqueId = function(){
-    return 'myid-' + _idcounter++
-}
-
 //Abstract class so that all game objects can be guaranteed to have a common updated, redrawn interface
 class GameObject {
     constructor() {}
@@ -109,11 +104,6 @@ class Car {
         let y = this.$el.position().left;
         this.$el.animate({left: x, top: y*2}, 1200, 'swing', () => { this.delete() });
     }
-    //Return the HTML element that should represent this car
-    get html() {
-        console.log(this);
-        return this.$el;
-    }
     delete() {
         this.$el.remove();
     }
@@ -165,7 +155,7 @@ class Supply extends GameObject {
 //Supply items that should be rendered with a vertical progress bar
 class VerticalSupply extends Supply {
     constructor($parent, max, cost, label, color, amount=0, saveData=0) {
-        super(max, cost, amount); //old value: <div class="col" style="text-align: left;">
+        super(max, cost, amount);
         this.$el = $(`
         <div class="col" style="text-align: left;">
             <div class="progress progress-bar-vertical supply-stack">
@@ -197,26 +187,33 @@ class MechanicUpgrade extends Supply {
     }
     buy() {
         if(super.buy()) {
+            //Look for the first available garage mechanic empty slot
             let $emptySlot = $('.garage .mechanic-slot.empty-slot').first();
+            //and remove the class that indicates the slot is empty
             $emptySlot.removeClass('empty-slot');
+            //and put the new mechanic there
             let bob = new Mechanic($emptySlot);
             gc.gameobjects.mechanics.push(bob);
         }
     }
 }
 
+//Mechanic sprites in various poses
 const MECHANIC_FACING_RIGHT_SPRITE = "img/mechanics/1-idle-se.png";
 const MECHANIC_FACING_LEFT_SPRITE = "img/mechanics/1-idle-sw.png";
 const MECHANIC_KNEELING_LEFT_SPRITE = "img/mechanics/1-kneel-nw.png";
 const MECHANIC_KNEELING_RIGHT_SPRITE = "img/mechanics/1-kneel-ne.png";
 class Mechanic {
     constructor($parent) {
+        //Determines how fast the mechanic will "auto-click" on the car
         this.speed = MECHANIC_BASE_SPEED;
         this.counter = 0;
         this.$el = $(`<div class="mechanic"><img class="mechanic-sprite text-right" src="${MECHANIC_FACING_LEFT_SPRITE}"/></div>`);
         $parent.append(this.$el);
     }
     update() {
+        //Keep a local counter to track the number of updates that pass so we can throttle the "auto-clicking"
+        //to occur only after a certain number of update ticks
         this.counter++;
         if(this.counter * this.speed >= 1) {
             this.counter = 0;
@@ -232,6 +229,8 @@ class Mechanic {
     }
 }
 
+//The garage container is responsible for displaying the car being fixed, metadata about the repair in progress
+//and any mechanics or other upgrades that should be shown around the car in progress
 class Garage {
     constructor($parent) {
         this.$el = $(`
@@ -309,8 +308,11 @@ class Garage {
     }
 }
 
+//This manages creating new cars (essentially new repair jobs) and their difficulty (i.e. how many clicks, what supplies are required)
+//Takes the current user "level" as input so that it can scale up more difficult jobs as the user progresses
 let carGenerator = function(level=1) {
     let selection;
+    //Use the level to determine weightings on a few different possible selections of car jobs to be generated
     switch(level) {
         case 1:
             selection = 0;
@@ -324,6 +326,7 @@ let carGenerator = function(level=1) {
             break;
     }
 
+    //Given the selection, generate the JSON representing the config of the job and return it
     switch(selection) {
         case 0: return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
         case 1:
@@ -353,6 +356,7 @@ let carGenerator = function(level=1) {
     }
 };
 
+//The update method takes a list of GameObjects and loops through all of them, calling their update method on each one
 //The objects list passed in contains both single objects and arrays of objects
 const update = function(objects) {
     for (let key in objects) {
@@ -369,6 +373,8 @@ const update = function(objects) {
     }
 }
 
+//The redraw method takes a list of GameObjects and loops through all of them, calling their redraw method on each one
+//The objects list passed in contains both single objects and arrays of objects
 const redraw = function(objects) {
     for (let key in objects) {
         let object = objects[key];
@@ -384,6 +390,8 @@ const redraw = function(objects) {
     }
 }
 
+//Responsible for orchestration of the overall game. A global object so that various game objects can access each other when necessary
+//This should be a singleton (but I haven't implemented with any proper singleton enforcement)
 class GameController {
     constructor() {
         this.gameobjects = {
@@ -439,6 +447,7 @@ class GameController {
     }
 }
 
+//Strip out a few unnecessary properties and then return a copy of the object that can be stored
 const serialize = function(object) {
     //First make a copy because we need to remove a few children before we pack it up to send for saving
     let copy = $.extend({}, object);
@@ -448,6 +457,7 @@ const serialize = function(object) {
     return copy;
 }
 
+//Pass in the critical game objects and generate a save file for storage in the cloud
 const createSaveFile = function(wallet, oilSupply) {
     return {
         "wallet": serialize(wallet),
@@ -455,6 +465,7 @@ const createSaveFile = function(wallet, oilSupply) {
     }
 }
 
+//Create the gloabl game controller object
 let gc = new GameController();
 
 //Document ready and main execution
@@ -471,6 +482,7 @@ $(function() {
         });
     });
 
+    //Initialize the global game controller and instantiate the various game objects for gameplay
     gc.loadGame();
     // gc.gameobjects.wallet.deposit(100000);
 
