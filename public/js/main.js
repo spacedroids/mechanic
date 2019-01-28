@@ -13,7 +13,7 @@ firebase.initializeApp(config);
 let userSavesDB = firebase.database();
 
 //Internal vars
-const cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+const CAR_SPRITES = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
 /* Game Tuning Variables */
 //Click Speed Related
 const MECHANIC_BASE_SPEED = 0.006;
@@ -22,11 +22,14 @@ const OIL_COST = 10;
 const ENGINE_COST = 1000;
 const PROFIT_MARGIN = 0.1;
 const BASE_SHOP_RATE = 100;
+const MECHANIC_HIRE = 1000;
 
 let _idcounter = 0;
 window.uniqueId = function(){
     return 'myid-' + _idcounter++
 }
+
+//Abstract class so that all game objects can be guaranteed to have a common updated, redrawn interface
 class GameObject {
     constructor() {}
     loadSaveData(saveData) {
@@ -43,6 +46,7 @@ class GameObject {
     redraw() {}
 }
 
+//Manages the user's funds and operations to deposit, withdraw, etc
 class Wallet extends GameObject {
     constructor($parent, funds=0, saveData) {
         super();
@@ -75,13 +79,14 @@ class Wallet extends GameObject {
     }
 }
 
+//The car object, responsible for value of the job and supplies needed to complete it and the avatar of the car
 class Car {
     constructor(workNeeded, value, supplies={}) {
         this.progress = 0;
         this.workNeeded = workNeeded;
         this.suppliesNeeded = supplies;
         this.value = value;
-        this.img = getRandomElement(cars);
+        this.img = getRandomElement(CAR_SPRITES);
         this.$el = $(`<img class="car" src="img/${this.img}">`);
     }
     //Animate driving this car away
@@ -111,6 +116,7 @@ class Car {
     }
 }
 
+//Abstract class to handle supply objects that can hold a limited number of items for use, and can be refilled by purchasing more
 class Supply extends GameObject {
     constructor(max, cost, amount, saveData) {
         super();
@@ -153,12 +159,13 @@ class Supply extends GameObject {
     }
 }
 
+//Supply items that should be rendered with a vertical progress bar
 class VerticalSupply extends Supply {
     constructor($parent, max, cost, label, color, amount=0, saveData=0) {
         super(max, cost, amount);
         this.$el = $(`
         <div class="col" style="text-align: left;">
-            <div class="progress progress-bar-vertical">
+            <div class="progress progress-bar-vertical supply-stack">
                 <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: ${color}"></div>
             </div>
             <div>${label}</div>
@@ -176,6 +183,7 @@ class VerticalSupply extends Supply {
     }
 }
 
+//Manages the button that will let users hire Mechanics from the Upgrade shop
 class MechanicUpgrade extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
@@ -235,8 +243,9 @@ class Garage {
         if(this.car) {
             this.$el.find('.numerator').text(this.car.progress);
             this.$el.find('.denominator').text(this.car.workNeeded);
-            if(this.car.suppliesNeeded.oil) {
-                this.$el.find('.supply-needs').text(this.car.suppliesNeeded.oil + "Oil");
+            if(Object.keys(this.car.suppliesNeeded).length !== 0) { //If there are any additional supplies needed
+                let firstKey = Object.keys(this.car.suppliesNeeded)[0];
+                this.$el.find('.supply-needs').text(this.car.suppliesNeeded[firstKey] + ' ' + firstKey);
                 this.$el.find('.supply-needs').show();
             } else {
                 this.$el.find('.supply-needs').hide();
@@ -262,6 +271,14 @@ class Garage {
             if(this.car.suppliesNeeded.oil === 0) {
                 delete this.car.suppliesNeeded.oil;
             }
+        } else if(this.car.suppliesNeeded.engine) {
+            if(!gc.gameobjects.engineSupply.take(1)) {
+                return; //not enough engines
+            }
+            this.car.suppliesNeeded.engine -= 1;
+            if(this.car.suppliesNeeded.engine === 0) {
+                delete this.car.suppliesNeeded.engine;
+            }
         } else {
             this.car.progress += unit;
         }
@@ -279,10 +296,17 @@ class Garage {
 }
 
 let carGenerator = function() {
-    if(getRandomInt(3) === 0) {
+    switch(getRandomInt(10)) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
         return new Car(3, BASE_SHOP_RATE + OIL_COST * 2, {"oil": 2});
+        case 10: return new Car(3, BASE_SHOP_RATE + OIL_COST * 2, {"engine": 1});
+        default: return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
     }
-    return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
 };
 
 //The objects list passed in contains both single objects and arrays of objects
@@ -329,7 +353,7 @@ class GameController {
         let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, "Oil", "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
         let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, "Engines", "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         let garage1 = new Garage($('#garages'), oilSupply);
-        let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), 2, 100);
+        new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE);
         //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
         this.gameobjects.garages.push(garage1);

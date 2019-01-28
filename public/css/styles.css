@@ -5,28 +5,8 @@
 body {
 	padding-top: 5rem;
 }
-#header {
-	/* border: 1px solid blue; */
-}
-#game-container {
-	/* display: flex; */
-	/* justify-content: center; */
-	/* align-items: top; */
-	/* border: 1px solid green; */
-	/* padding: 20px; */
-	/* height: 300px; */
-	/* width: 600px; */
-}
-#garages{
-	/* display: flex; */
-	/* border: 2px solid red; */
-}
-.garage{
-	/* border: 2px solid yellow; */
-}
 .car{
 	cursor: pointer;
-	/* position: relative; */
 }
 .mechanic{
 	padding: 5px;
@@ -39,6 +19,9 @@ body {
 .starter-template {
 	padding: 3rem 1.5rem;
 	text-align: center;
+}
+.supply-stack {
+	cursor: pointer;
 }
 .progress-bar-vertical {
 	width: 20px;
