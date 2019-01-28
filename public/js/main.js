@@ -165,7 +165,7 @@ class Supply extends GameObject {
 //Supply items that should be rendered with a vertical progress bar
 class VerticalSupply extends Supply {
     constructor($parent, max, cost, label, color, amount=0, saveData=0) {
-        super(max, cost, amount);
+        super(max, cost, amount); //old value: <div class="col" style="text-align: left;">
         this.$el = $(`
         <div class="col" style="text-align: left;">
             <div class="progress progress-bar-vertical supply-stack">
@@ -207,6 +207,8 @@ class MechanicUpgrade extends Supply {
 
 const MECHANIC_FACING_RIGHT_SPRITE = "img/mechanics/1-idle-se.png";
 const MECHANIC_FACING_LEFT_SPRITE = "img/mechanics/1-idle-sw.png";
+const MECHANIC_KNEELING_LEFT_SPRITE = "img/mechanics/1-kneel-nw.png";
+const MECHANIC_KNEELING_RIGHT_SPRITE = "img/mechanics/1-kneel-ne.png";
 class Mechanic {
     constructor($parent) {
         this.speed = MECHANIC_BASE_SPEED;
@@ -223,9 +225,9 @@ class Mechanic {
     }
     redraw() {
         if(this.$el.parent().hasClass('face-left')) {
-            this.$el.find('img').attr('src', MECHANIC_FACING_LEFT_SPRITE);
+            this.$el.find('img').attr('src', MECHANIC_KNEELING_LEFT_SPRITE);
         } else if(this.$el.parent().hasClass('face-right')) {
-            this.$el.find('img').attr('src', MECHANIC_FACING_RIGHT_SPRITE);
+            this.$el.find('img').attr('src', MECHANIC_KNEELING_RIGHT_SPRITE);
         }
     }
 }
@@ -427,7 +429,7 @@ class GameController {
     checkScore(funds) {
         let easy = {2:299, 3:999, 4:2000};
         let debug = {2:1, 3:1, 4:1};
-        let levelReqs = debug;
+        let levelReqs = easy;
         let lvl;
         for(lvl in levelReqs) {
             if(funds > levelReqs[lvl]) {
@@ -470,7 +472,7 @@ $(function() {
     });
 
     gc.loadGame();
-    gc.gameobjects.wallet.deposit(100000);
+    // gc.gameobjects.wallet.deposit(100000);
 
     //Game loop
     window.setInterval(function(){
