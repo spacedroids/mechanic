@@ -221,17 +221,21 @@ class Mechanic {
 
 class Garage {
     constructor($parent) {
-        this.$el = $(`<div class="garage">
-        <div>
-           <span class="numerator">0</span>
-           <span class="divider">/</span>
-           <span class="denominator">10</span>
-        </div>
-        <div class="supply-needs">nothing</div>
-     </div>`);
+        this.$el = $(`
+        <div class="garage">
+            <div>
+                <button type="button" class="btn btn-primary">Repaired
+                    <span class="numerator">0</span>
+                    <span class="divider">/</span>
+                    <span class="denominator">10</span>
+                </button>
+            </div>
+            <div class="supply-needs">nothing</div>
+        </div>`);
         $parent.append(this.$el);
         this.car = null;
         this.status = "empty";
+        this.$el.find('button').click(() => this.fix(1));
     }
     update() {
         if(this.status === "leaving") {
@@ -258,7 +262,6 @@ class Garage {
         car.garage = this;
         this.$el.prepend(car.$el);
         this.$el.prepend($(`<div class="value">$${car.value}</div>`));
-        car.$el.click(() => this.fix(1));
     }
     fix(unit) {
         if(!this.car) {

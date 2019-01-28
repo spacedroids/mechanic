@@ -7,6 +7,7 @@ body {
 }
 .car{
 	cursor: pointer;
+	padding: 0.5rem;
 }
 .mechanic{
 	padding: 5px;
