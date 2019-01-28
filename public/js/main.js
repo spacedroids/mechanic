@@ -14,6 +14,14 @@ let userSavesDB = firebase.database();
 
 //Internal vars
 const cars = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+/* Game Tuning Variables */
+//Click Speed Related
+const MECHANIC_BASE_SPEED = 0.006;
+//Economy
+const OIL_COST = 10;
+const ENGINE_COST = 1000;
+const PROFIT_MARGIN = 0.1;
+const BASE_SHOP_RATE = 100;
 
 let _idcounter = 0;
 window.uniqueId = function(){
@@ -74,8 +82,7 @@ class Car {
         this.suppliesNeeded = supplies;
         this.value = value;
         this.img = getRandomElement(cars);
-        this.id = uniqueId();
-        this.$el = $('<img>').addClass('car').attr('id',uniqueId()).attr('src','img/'+this.img);
+        this.$el = $(`<img class="car" src="img/${this.img}">`);
     }
     //Animate driving this car away
     driveAway() {
@@ -147,14 +154,14 @@ class Supply extends GameObject {
 }
 
 class VerticalSupply extends Supply {
-    constructor($parent, max, cost, amount=0, saveData=0) {
+    constructor($parent, max, cost, label, color, amount=0, saveData=0) {
         super(max, cost, amount);
         this.$el = $(`
         <div class="col" style="text-align: left;">
             <div class="progress progress-bar-vertical">
-                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: black"></div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: ${color}"></div>
             </div>
-            <div>Oil</div>
+            <div>${label}</div>
         </div>`);
         $parent.append(this.$el);
         this.$el.click(() => {
@@ -172,7 +179,7 @@ class VerticalSupply extends Supply {
 class MechanicUpgrade extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
-        this.$el = $('<div class="card-body">Hire</div>');
+        this.$el = $(`<div class="card-body"><button type="button" class="btn btn-primary">Hire Mechanic $${cost}</button></div>`);
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.buy(); });
@@ -187,7 +194,7 @@ class MechanicUpgrade extends Supply {
 
 class Mechanic {
     constructor($parent) {
-        this.speed = 0.006;
+        this.speed = MECHANIC_BASE_SPEED;
         this.counter = 0;
         this.$el = $('<div class="mechanic"><img class="mechanic-sprite" src="img/mechanics/1-idle-se.png"/><div>Bob</div></div>');
         $parent.append(this.$el);
@@ -204,7 +211,7 @@ class Mechanic {
 
 class Garage {
     constructor($parent) {
-        this.$el = $(`<div class="garage" id="garage1">
+        this.$el = $(`<div class="garage">
         <div>
            <span class="numerator">0</span>
            <span class="divider">/</span>
@@ -240,6 +247,7 @@ class Garage {
         this.car = car;
         car.garage = this;
         this.$el.prepend(car.$el);
+        this.$el.prepend($(`<div class="value">$${car.value}</div>`));
         car.$el.click(() => this.fix(1));
     }
     fix(unit) {
@@ -261,6 +269,7 @@ class Garage {
             gc.gameobjects.wallet.deposit(this.car.value);
             this.status = "leaving";
             this.car.driveAway();
+            this.$el.find('.value').remove();
             this.status = "empty";
         }
     }
@@ -271,9 +280,9 @@ class Garage {
 
 let carGenerator = function() {
     if(getRandomInt(3) === 0) {
-        return new Car(3, 200, {"oil": 2});
+        return new Car(3, BASE_SHOP_RATE + OIL_COST * 2, {"oil": 2});
     }
-    return new Car(getRandomInt(3)+1, 100);
+    return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
 };
 
 //The objects list passed in contains both single objects and arrays of objects
@@ -317,13 +326,15 @@ class GameController {
     loadGame(saveFile={}) {
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
-        let oilSupply = new VerticalSupply($('#supplies'), 10, 10, 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
+        let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, "Oil", "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
+        let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, "Engines", "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         let garage1 = new Garage($('#garages'), oilSupply);
         let mechanicUpgrades = new MechanicUpgrade($('#upgradeShop'), 2, 100);
         //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
         this.gameobjects.garages.push(garage1);
         this.gameobjects.oilSupply = oilSupply;
+        this.gameobjects.engineSupply = engineSupply;
     }
     resetDom() {
         $('.game-state div').remove();
@@ -335,6 +346,7 @@ const serialize = function(object) {
     let copy = $.extend({}, object);
     //Delete the jquery ref to the DOM, don't want to be part of save
     delete copy.$el;
+    delete copy.$body;
     return copy;
 }
 
@@ -351,7 +363,7 @@ let gc = new GameController();
 $(function() {
     $('.save-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
-        userSaveBucket.set(createSaveFile(gc.gameobjects.wallet, gc.gameobjects.oilSupply));
+        userSaveBucket.set(createSaveFile(gc.gameobjects.wallet, gc.gameobjects.oilSupply, gc.gameobjects.engineSupply));
     });
     $('.load-game').click(function() {
         let userSaveBucket = userSavesDB.ref('test_user2');
