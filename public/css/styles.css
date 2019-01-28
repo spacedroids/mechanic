@@ -5,13 +5,15 @@
 body {
 	padding-top: 5rem;
 }
+.centered-col {
+	margin: auto;
+}
 .car{
 	cursor: pointer;
 	padding: 0.5rem;
 }
-.mechanic{
-	padding: 5px;
-   text-align: center;
+.car-slot{
+	width: 49px;
 }
 .mechanic-sprite{
 	width: 15px;
@@ -25,9 +27,9 @@ body {
 	cursor: pointer;
 }
 .progress-bar-vertical {
-	width: 20px;
+	width: 40px;
 	min-height: 100px;
-	margin-right: 20px;
+	margin: 0.25rem;
 	display: -webkit-box;  /* OLD - iOS 6-, Safari 3.1-6, BB7 */
 	display: -ms-flexbox;  /* TWEENER - IE 10 */
 	display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */

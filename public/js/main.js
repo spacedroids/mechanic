@@ -171,7 +171,7 @@ class VerticalSupply extends Supply {
             <div class="progress progress-bar-vertical supply-stack">
                 <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: ${color}"></div>
             </div>
-            <div>${label}</div>
+            <button type="button" class="btn btn-primary">${label} $${cost}</button>
         </div>`);
         $parent.append(this.$el);
         this.$el.click(() => {
@@ -197,17 +197,21 @@ class MechanicUpgrade extends Supply {
     }
     buy() {
         if(super.buy()) {
-            let bob = new Mechanic($('#upgrades'));
+            let $emptySlot = $('.garage .mechanic-slot.empty-slot').first();
+            $emptySlot.removeClass('empty-slot');
+            let bob = new Mechanic($emptySlot);
             gc.gameobjects.mechanics.push(bob);
         }
     }
 }
 
+const MECHANIC_FACING_RIGHT_SPRITE = "img/mechanics/1-idle-se.png";
+const MECHANIC_FACING_LEFT_SPRITE = "img/mechanics/1-idle-sw.png";
 class Mechanic {
     constructor($parent) {
         this.speed = MECHANIC_BASE_SPEED;
         this.counter = 0;
-        this.$el = $('<div class="mechanic"><img class="mechanic-sprite" src="img/mechanics/1-idle-se.png"/><div>Bob</div></div>');
+        this.$el = $(`<div class="mechanic"><img class="mechanic-sprite text-right" src="${MECHANIC_FACING_LEFT_SPRITE}"/></div>`);
         $parent.append(this.$el);
     }
     update() {
@@ -217,21 +221,33 @@ class Mechanic {
             gc.gameobjects.garages[0].fix(1);
         }
     }
-    redraw() {}
+    redraw() {
+        if(this.$el.parent().hasClass('face-left')) {
+            this.$el.find('img').attr('src', MECHANIC_FACING_LEFT_SPRITE);
+        } else if(this.$el.parent().hasClass('face-right')) {
+            this.$el.find('img').attr('src', MECHANIC_FACING_RIGHT_SPRITE);
+        }
+    }
 }
 
 class Garage {
     constructor($parent) {
         this.$el = $(`
-        <div class="garage">
-            <div>
-                <button type="button" class="btn btn-primary">Repaired
+        <div class="garage container">
+            <div class="value row justify-content-center"></div>
+            <div class="sprite-container row justify-content-center no-gutters">
+                <div class="col mechanic-slot empty-slot col-lg-1 face-right"></div>
+                <div class="col car-slot col-md-auto"></div> 
+                <div class="col mechanic-slot empty-slot col-lg-1 face-left"></div>
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-primary centered-col">Repaired
                     <span class="numerator">0</span>
                     <span class="divider">/</span>
                     <span class="denominator">10</span>
                 </button>
             </div>
-            <div class="supply-needs">nothing</div>
+            <div class="row"><div class="supply-needs centered-col">nothing</div></div>
         </div>`);
         $parent.append(this.$el);
         this.car = null;
@@ -261,8 +277,8 @@ class Garage {
     newCar(car) {
         this.car = car;
         car.garage = this;
-        this.$el.prepend(car.$el);
-        this.$el.prepend($(`<div class="value">$${car.value}</div>`));
+        this.$el.find('.car-slot').append(car.$el);
+        this.$el.find('.value').text('$' + car.value);
     }
     fix(unit) {
         if(!this.car) {
@@ -283,7 +299,6 @@ class Garage {
             gc.gameobjects.wallet.deposit(this.car.value);
             this.status = "leaving";
             this.car.driveAway();
-            this.$el.find('.value').remove();
             this.status = "empty";
         }
     }
@@ -378,8 +393,8 @@ class GameController {
         this.progress = 1;
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
-        let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, "Oil", "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
-        let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, "Engines", "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
+        let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, LABEL_OIL, "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
+        let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, LABEL_ENGINE, "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         engineSupply.$el.addClass('level-4');
         engineSupply.$el.hide();
         let garage1 = new Garage($('#garages'));
@@ -455,6 +470,7 @@ $(function() {
     });
 
     gc.loadGame();
+    gc.gameobjects.wallet.deposit(100000);
 
     //Game loop
     window.setInterval(function(){
