@@ -72,6 +72,7 @@ class Wallet extends GameObject {
     }
     deposit(amount) {
         this.funds += amount;
+        gc.checkScore(this.funds);
     }
     getBalance() {
         return this.funds;
@@ -241,7 +242,7 @@ class Garage {
         if(this.status === "leaving") {
         }
         else if(this.status === "empty") {
-            this.newCar(carGenerator());
+            this.newCar(carGenerator(gc.progress));
             this.status = "repairing";
         }
     }
@@ -291,32 +292,43 @@ class Garage {
     }
 }
 
-let carGenerator = function() {
-    switch(getRandomInt(10)) {
-        case 0: return new Car(3,
-                                BASE_SHOP_RATE + OIL_COST * 5 + ENGINE_COST,
-                                [
-                                    {
-                                        label: LABEL_ENGINE,
-                                        quantity: 1,
-                                        supply: gc.gameobjects.engineSupply,
-                                    },
-                                    {
-                                        label: LABEL_OIL,
-                                        quantity: 5,
-                                        supply: gc.gameobjects.oilSupply,
-                                    },
-                                ]);
+let carGenerator = function(level=1) {
+    let selection;
+    switch(level) {
         case 1:
+            selection = 0;
+            break;
         case 2:
         case 3:
+            selection = weightedRand({0:0.8, 1:0.2});
+            break;
         case 4:
-        case 5:
-        return new Car(3, BASE_SHOP_RATE + OIL_COST * 2,
+            selection = weightedRand({0:0.75, 1:0.2, 2:0.05});
+            break;
+    }
+
+    switch(selection) {
+        case 0: return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
+        case 1:
+            return new Car(3, BASE_SHOP_RATE + OIL_COST * 2,
             [
                 {
                     label: LABEL_OIL,
                     quantity: 2,
+                    supply: gc.gameobjects.oilSupply,
+                },
+            ]);
+        case 2:
+            return new Car(6, BASE_SHOP_RATE * 3 + OIL_COST * 5 + ENGINE_COST,
+            [
+                {
+                    label: LABEL_ENGINE,
+                    quantity: 1,
+                    supply: gc.gameobjects.engineSupply,
+                },
+                {
+                    label: LABEL_OIL,
+                    quantity: 5,
                     supply: gc.gameobjects.oilSupply,
                 },
             ]);
@@ -363,10 +375,13 @@ class GameController {
         };
     }
     loadGame(saveFile={}) {
+        this.progress = 1;
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
         let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, "Oil", "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
         let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, "Engines", "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
+        engineSupply.$el.addClass('level-4');
+        engineSupply.$el.hide();
         let garage1 = new Garage($('#garages'), oilSupply);
         new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE);
         //Add the game objects to the list of objects
@@ -377,6 +392,42 @@ class GameController {
     }
     resetDom() {
         $('.game-state div').remove();
+    }
+    //The player has leveled up
+    levelUp(minLevel) {
+        if(this.progress >= minLevel) {
+            return; //If already at that level, ignore
+        }
+        this.progress = minLevel;
+        switch(this.progress) {
+            case 2:
+                $('.level-2').show();
+                break;
+            case 3:
+                $('.level-3').show();
+                break;
+            case 4:
+                $('.level-4').show();
+                break;
+
+        }
+    }
+    //Pass in the current funds, this checks if the user is qualifying for a levelup
+    checkScore(funds) {
+        if(funds > 2000)
+        {
+            this.levelUp(4);
+            return;
+        }
+        if(funds > 999)
+        {
+            this.levelUp(3);
+            return;
+        }
+        if(funds > 299) {
+            this.levelUp(2);
+            return;
+        }
     }
 }
 
