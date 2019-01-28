@@ -79,11 +79,19 @@ class Car {
     }
     //Animate driving this car away
     driveAway() {
-        this.$el.css('position', 'absolute');
+        //Record the car's current position relative to the whole window
         let left = this.$el.offset().left;
+        let top = this.$el.offset().top;
+        //To make animation work, have to detach from current box and move this to the 'body'
+        this.$el.detach();
+        $('body').append(this.$el);
+        //Set position absolute so it can move freely
+        this.$el.css('position', 'absolute');
+        //Place it back right where it was a moment ago
         this.$el.css('left', left);
-        let x = -this.$el.offset().left - this.$el.width();
-        let y = this.$el.offset().left;
+        this.$el.css('top', top);
+        let x = -this.$el.position().left - this.$el.width();
+        let y = this.$el.position().left;
         this.$el.animate({left: x, top: y*2}, 1200, 'swing', () => { this.delete() });
     }
     //Return the HTML element that should represent this car
@@ -142,11 +150,11 @@ class VerticalSupply extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
         this.$el = $(`
-        <div>
-        <div class="progress progress-bar-vertical">
-            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: black"></div>
-        </div>
-        <div>Oil</div>
+        <div class="col" style="text-align: left;">
+            <div class="progress progress-bar-vertical">
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 0%; background-color: black"></div>
+            </div>
+            <div>Oil</div>
         </div>`);
         $parent.append(this.$el);
         this.$el.click(() => {
@@ -179,7 +187,7 @@ class MechanicUpgrade extends Supply {
 
 class Mechanic {
     constructor($parent) {
-        this.speed = 0.007;
+        this.speed = 0.006;
         this.counter = 0;
         this.$el = $('<div class="mechanic"><img class="mechanic-sprite" src="img/mechanics/1-idle-se.png"/><div>Bob</div></div>');
         $parent.append(this.$el);
@@ -359,5 +367,5 @@ $(function() {
     window.setInterval(function(){
         update(gc.gameobjects);
         redraw(gc.gameobjects);
-    }, 1);
+    }, 12);
 });
