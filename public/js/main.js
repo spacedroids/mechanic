@@ -382,7 +382,7 @@ class GameController {
         let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, "Engines", "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         engineSupply.$el.addClass('level-4');
         engineSupply.$el.hide();
-        let garage1 = new Garage($('#garages'), oilSupply);
+        let garage1 = new Garage($('#garages'));
         new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE);
         //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
@@ -400,33 +400,24 @@ class GameController {
         }
         this.progress = minLevel;
         switch(this.progress) {
-            case 2:
-                $('.level-2').show();
-                break;
-            case 3:
-                $('.level-3').show();
-                break;
             case 4:
                 $('.level-4').show();
-                break;
-
+            case 3:
+                $('.level-3').show();
+            case 2:
+                $('.level-2').show();
         }
     }
     //Pass in the current funds, this checks if the user is qualifying for a levelup
     checkScore(funds) {
-        if(funds > 2000)
-        {
-            this.levelUp(4);
-            return;
-        }
-        if(funds > 999)
-        {
-            this.levelUp(3);
-            return;
-        }
-        if(funds > 299) {
-            this.levelUp(2);
-            return;
+        let easy = {2:299, 3:999, 4:2000};
+        let debug = {2:1, 3:1, 4:1};
+        let levelReqs = debug;
+        let lvl;
+        for(lvl in levelReqs) {
+            if(funds > levelReqs[lvl]) {
+                this.levelUp(parseInt(lvl))
+            }
         }
     }
 }
