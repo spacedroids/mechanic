@@ -49,13 +49,29 @@
       </div>
    </nav>
    <main role="main" class="container">
-      <div class="game-state" id="header">
-      </div>         
-      <div id="game-container">
-         <div class="game-state" id="upgradeShop"></div>
-         <div class="game-state" id="supplies"></div>
-         <div class="game-state" id="upgrades"></div>
-         <div class="game-state" id="garages"></div>
+      <div class="game-state row" id="header">
+      </div>
+      <div id="row game-container">
+         <div class="col-sm">
+            <div class="game-state card text-center m-1 p-1" style="width: 9rem" id="upgradeShop">
+               <h5 class="card-title">Upgrades</h5>
+            </div>
+         </div>
+         <div class="col-sm">
+            <div class="game-state card text-center m-1 p-1"  style="width: 9rem" id="supplies">
+               <h5 class="card-title">Supplies</h5>
+            </div>
+         </div>
+         <div class="col-sm">
+            <div class="game-state card text-center m-1 p-1" style="width: 9rem"  id="upgrades">
+               <h5 class="card-title">Upgrades</h5>
+            </div>
+         </div>
+         <div class="col-sm">
+            <div class="game-state card text-center m-1 p-1" style="width: 9rem"  id="garages">
+               <h5 class="card-title">Garages</h5>
+            </div>
+         </div>
       </div>
    </main>
    <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script>

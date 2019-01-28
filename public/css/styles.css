@@ -9,16 +9,16 @@ body {
 	/* border: 1px solid blue; */
 }
 #game-container {
-	display: flex;
-	justify-content: center;
-	align-items: top;
+	/* display: flex; */
+	/* justify-content: center; */
+	/* align-items: top; */
 	/* border: 1px solid green; */
-	padding: 20px;
-	height: 300px;
-	width: 600px;
+	/* padding: 20px; */
+	/* height: 300px; */
+	/* width: 600px; */
 }
 #garages{
-	display: flex;
+	/* display: flex; */
 	/* border: 2px solid red; */
 }
 .garage{
@@ -40,10 +40,6 @@ body {
 	padding: 3rem 1.5rem;
 	text-align: center;
 }
-#oil {
-	width: 100px;
-}
-
 .progress-bar-vertical {
 	width: 20px;
 	min-height: 100px;

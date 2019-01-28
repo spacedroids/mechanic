@@ -39,7 +39,11 @@ class Wallet extends GameObject {
     constructor($parent, funds=0, saveData) {
         super();
         this.funds = funds;
-        this.$el = $(`<p id="wallet">${funds}</p>`);
+        this.$el = $(
+        `<div class="card text-white bg-success m-0.5 p-0.5" style="width: 9rem; font-size: 1em; line-height: 1;" id="wallet">
+            <div class="card-body">${funds}</div>
+        </div>`);
+        this.$body = this.$el.find('.card-body')
         this.loadSaveData(saveData);
         this.attach($parent);
         this.redraw();
@@ -59,7 +63,7 @@ class Wallet extends GameObject {
         return this.funds;
     }
     redraw() {
-        this.$el.text(this.funds);
+        this.$body.text('$' + this.funds);
     }
 }
 
@@ -160,7 +164,7 @@ class VerticalSupply extends Supply {
 class MechanicUpgrade extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
-        this.$el = $('<div>Hire</div>');
+        this.$el = $('<div class="card-body">Hire</div>');
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.buy(); });
@@ -314,7 +318,7 @@ class GameController {
         this.gameobjects.oilSupply = oilSupply;
     }
     resetDom() {
-        $('.game-state').empty();
+        $('.game-state div').remove();
     }
 }
 
