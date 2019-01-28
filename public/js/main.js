@@ -14,6 +14,8 @@ let userSavesDB = firebase.database();
 
 //Internal vars
 const CAR_SPRITES = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+const LABEL_OIL = "Oil";
+const LABEL_ENGINE = "Engine";
 /* Game Tuning Variables */
 //Click Speed Related
 const MECHANIC_BASE_SPEED = 0.006;
@@ -81,7 +83,7 @@ class Wallet extends GameObject {
 
 //The car object, responsible for value of the job and supplies needed to complete it and the avatar of the car
 class Car {
-    constructor(workNeeded, value, supplies={}) {
+    constructor(workNeeded, value, supplies=[]) {
         this.progress = 0;
         this.workNeeded = workNeeded;
         this.suppliesNeeded = supplies;
@@ -243,9 +245,8 @@ class Garage {
         if(this.car) {
             this.$el.find('.numerator').text(this.car.progress);
             this.$el.find('.denominator').text(this.car.workNeeded);
-            if(Object.keys(this.car.suppliesNeeded).length !== 0) { //If there are any additional supplies needed
-                let firstKey = Object.keys(this.car.suppliesNeeded)[0];
-                this.$el.find('.supply-needs').text(this.car.suppliesNeeded[firstKey] + ' ' + firstKey);
+            if(this.car.suppliesNeeded.length !== 0) { //If there are any additional supplies needed
+                this.$el.find('.supply-needs').text(this.car.suppliesNeeded[0].label + ' ' + this.car.suppliesNeeded[0].quantity);
                 this.$el.find('.supply-needs').show();
             } else {
                 this.$el.find('.supply-needs').hide();
@@ -263,21 +264,13 @@ class Garage {
         if(!this.car) {
             return;
         }
-        if(this.car.suppliesNeeded.oil) {
-            if(!gc.gameobjects.oilSupply.take(1)) {
-                return; //not enough oil
+        if(this.car.suppliesNeeded.length !== 0) {
+            if(!this.car.suppliesNeeded[0].supply.take(1)) {
+                return; //that supply is empty
             }
-            this.car.suppliesNeeded.oil -= 1;
-            if(this.car.suppliesNeeded.oil === 0) {
-                delete this.car.suppliesNeeded.oil;
-            }
-        } else if(this.car.suppliesNeeded.engine) {
-            if(!gc.gameobjects.engineSupply.take(1)) {
-                return; //not enough engines
-            }
-            this.car.suppliesNeeded.engine -= 1;
-            if(this.car.suppliesNeeded.engine === 0) {
-                delete this.car.suppliesNeeded.engine;
+            this.car.suppliesNeeded[0].quantity -= 1;
+            if(this.car.suppliesNeeded[0].quantity === 0) {
+                this.car.suppliesNeeded.shift();
             }
         } else {
             this.car.progress += unit;
@@ -297,14 +290,33 @@ class Garage {
 
 let carGenerator = function() {
     switch(getRandomInt(10)) {
-        case 0:
+        case 0: return new Car(3,
+                                BASE_SHOP_RATE + OIL_COST * 5 + ENGINE_COST,
+                                [
+                                    {
+                                        label: LABEL_ENGINE,
+                                        quantity: 1,
+                                        supply: gc.gameobjects.engineSupply,
+                                    },
+                                    {
+                                        label: LABEL_OIL,
+                                        quantity: 5,
+                                        supply: gc.gameobjects.oilSupply,
+                                    },
+                                ]);
         case 1:
         case 2:
         case 3:
         case 4:
         case 5:
-        return new Car(3, BASE_SHOP_RATE + OIL_COST * 2, {"oil": 2});
-        case 10: return new Car(3, BASE_SHOP_RATE + OIL_COST * 2, {"engine": 1});
+        return new Car(3, BASE_SHOP_RATE + OIL_COST * 2,
+            [
+                {
+                    label: LABEL_OIL,
+                    quantity: 2,
+                    supply: gc.gameobjects.oilSupply,
+                },
+            ]);
         default: return new Car(getRandomInt(3)+1, BASE_SHOP_RATE);
     }
 };
