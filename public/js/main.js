@@ -353,6 +353,7 @@ class Garage {
         }
         if(this.car.suppliesNeeded.length !== 0) {
             if(!this.car.suppliesNeeded[0].supply.take(1)) {
+                triggerShake(this.car.suppliesNeeded[0].supply.$el);
                 return; //that supply is empty
             }
             this.car.suppliesNeeded[0].quantity -= 1;
@@ -560,7 +561,8 @@ $(function() {
 
     //Initialize the global game controller and instantiate the various game objects for gameplay
     gc.loadGame();
-    // gc.gameobjects.wallet.deposit(100000);
+    //CHEAT CODE
+    // gc.gameobjects.wallet.deposit(999999);
 
     //Game loop
     window.setInterval(function(){
