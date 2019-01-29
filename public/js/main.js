@@ -73,6 +73,73 @@ class Wallet extends GameObject {
     }
 }
 
+class QueueManager extends GameObject {
+    constructor() {
+        super();
+        this.$el = $('#jobQueue');
+        this.jobs = [];
+        for(let i=0; i<3; i++) {
+            let job = new QueuedCar(this.$el);
+            job.populate(carGenerator(gc.progress));
+            this.jobs.push(job);
+        }
+    }
+    update() {
+        // let numJobs = $('#jobQueue .job').length;
+        if(gc.gameobjects.garages[0].status === 'empty') {
+            $('#jobQueue .btn-success').attr("disabled", false);
+        } else {
+            $('#jobQueue .btn-success').attr("disabled", true);
+        }
+        this.jobs.forEach(function (job) {
+            if(job.state === QUEUEDCAR_STATE_EMPTY) {
+                job.populate(carGenerator(gc.progress));
+            }
+        })
+    }
+}
+
+const QUEUEDCAR_STATE_EMPTY = "e";
+const QUEUEDCAR_STATE_HASCAR = "c";
+//Represents a queued available job that will flow into the garages for work
+class QueuedCar {
+    constructor($parent) {
+        this.state = QUEUEDCAR_STATE_EMPTY;
+        this.$el = $(`
+        <div class="col job">
+            <div class="value row justify-content-center"></div>
+            <div class="sprite-container row justify-content-center no-gutters">
+                <div class="col car-slot col-md-auto"></div>
+            </div>
+            <div class="row">
+                <div class="supply-needs centered-col">nothing</div>
+            </div>
+            <div class="row justify-content-center">
+                <button type="button" class="btn btn-success m-1">Take Job</button><button type="button" class="btn btn-danger m-1">Get Lost</button>
+            </div>
+        </div>`);
+        $parent.append(this.$el);
+        this.car = {};
+        this.$el.find('.btn-success').click(() => {
+            gc.gameobjects.garages[0].newCar(this.car);
+            this.state = QUEUEDCAR_STATE_EMPTY;
+        });
+    }
+    populate(car) {
+        this.car = car;
+        this.$el.find('.car-slot').append(car.$el);
+        this.$el.find('.value').text('$' + car.value);
+        if(this.car.suppliesNeeded.length !== 0) { //If there are any supplies needed
+            this.$el.find('.supply-needs').text(this.car.suppliesNeeded[0].label + ' ' + this.car.suppliesNeeded[0].quantity);
+            this.$el.find('.supply-needs').show();
+        } else {
+            this.$el.find('.supply-needs').hide();
+        }
+        this.state = QUEUEDCAR_STATE_HASCAR;
+    }
+
+}
+
 //The car object, responsible for value of the job and supplies needed to complete it and the avatar of the car
 class Car {
     constructor(workNeeded, value, supplies=[]) {
@@ -225,6 +292,9 @@ class Mechanic {
     }
 }
 
+//Not used, but keep for future considerations
+const emptyGarageButton = `<button type="button" class="empty-button btn btn-dark centered-col" disabled style="display: none;">Empty Garage</button>`;
+
 //The garage container is responsible for displaying the car being fixed, metadata about the repair in progress
 //and any mechanics or other upgrades that should be shown around the car in progress
 class Garage {
@@ -238,7 +308,7 @@ class Garage {
                 <div class="col mechanic-slot empty-slot col-lg-1 face-left"></div>
             </div>
             <div class="row">
-                <button type="button" class="btn btn-primary centered-col">Repaired
+                <button type="button" class="fix-button btn btn-primary centered-col">Repaired
                     <span class="numerator">0</span>
                     <span class="divider">/</span>
                     <span class="denominator">10</span>
@@ -247,9 +317,8 @@ class Garage {
             <div class="row"><div class="supply-needs centered-col">nothing</div></div>
         </div>`);
         $parent.append(this.$el);
-        this.car = null;
-        this.status = "empty";
-        this.$el.find('button').click(() => this.fix(1));
+        this.empty();
+        this.$el.find('.fix-button').click(() => this.fix(1));
     }
     update() {
         if(this.status === "leaving") {
@@ -276,6 +345,7 @@ class Garage {
         car.garage = this;
         this.$el.find('.car-slot').append(car.$el);
         this.$el.find('.value').text('$' + car.value);
+        this.status = "reparing";
     }
     fix(unit) {
         if(!this.car) {
@@ -297,10 +367,13 @@ class Garage {
             gc.tallyCar();
             this.status = "leaving";
             this.car.driveAway();
-            this.status = "empty";
+            this.empty();
         }
     }
     empty() {
+        this.$el.find()
+        this.car = null;
+        this.$el.find('.value').text('');
         this.status = "empty";
     }
 }
@@ -412,6 +485,7 @@ class GameController {
         this.gameobjects.garages.push(garage1);
         this.gameobjects.oilSupply = oilSupply;
         this.gameobjects.engineSupply = engineSupply;
+        this.gameobjects.queueManager = new QueueManager();
     }
     resetDom() {
         $('.game-state div').remove();
