@@ -262,17 +262,26 @@ class MechanicUpgrade extends Supply {
 }
 
 //Mechanic sprites in various poses
-const MECHANIC_FACING_RIGHT_SPRITE = "img/mechanics/1-idle-se.png";
-const MECHANIC_FACING_LEFT_SPRITE = "img/mechanics/1-idle-sw.png";
+const MECHANIC_IDLE_RIGHT_SPRITE = "img/mechanics/1-idle-se.png";
+const MECHANIC_IDLE_LEFT_SPRITE = "img/mechanics/1-idle-sw.png";
 const MECHANIC_KNEELING_LEFT_SPRITE = "img/mechanics/1-kneel-nw.png";
 const MECHANIC_KNEELING_RIGHT_SPRITE = "img/mechanics/1-kneel-ne.png";
-class Mechanic {
+class Mechanic extends GameObject{
     constructor($parent) {
+        super();
         //Determines how fast the mechanic will "auto-click" on the car
         this.speed = MECHANIC_BASE_SPEED;
         this.counter = 0;
-        this.$el = $(`<div class="mechanic"><img class="mechanic-sprite text-right" src="${MECHANIC_FACING_LEFT_SPRITE}"/></div>`);
+        this.$el = $(`<div class="mechanic"><img class="mechanic-sprite text-right" src="${MECHANIC_IDLE_LEFT_SPRITE}"/></div>`);
         $parent.append(this.$el);
+        if(this.$el.parent().hasClass('face-left')) {
+            this.kneeling_pose_img = MECHANIC_KNEELING_LEFT_SPRITE;
+            this.standing_pose_img = MECHANIC_IDLE_LEFT_SPRITE;
+        } else if(this.$el.parent().hasClass('face-right')) {
+            this.kneeling_pose_img = MECHANIC_KNEELING_RIGHT_SPRITE;
+            this.standing_pose_img = MECHANIC_IDLE_RIGHT_SPRITE;
+        }
+        this.idle();
     }
     update() {
         //Keep a local counter to track the number of updates that pass so we can throttle the "auto-clicking"
@@ -280,15 +289,14 @@ class Mechanic {
         this.counter++;
         if(this.counter * this.speed >= 1) {
             this.counter = 0;
-            gc.gameobjects.garages[0].fix(1);
+            gc.gameobjects.garages[0].fix(1) ? this.working() : this.idle();
         }
     }
-    redraw() {
-        if(this.$el.parent().hasClass('face-left')) {
-            this.$el.find('img').attr('src', MECHANIC_KNEELING_LEFT_SPRITE);
-        } else if(this.$el.parent().hasClass('face-right')) {
-            this.$el.find('img').attr('src', MECHANIC_KNEELING_RIGHT_SPRITE);
-        }
+    idle() {
+        this.$el.find('img').attr('src', this.standing_pose_img);
+    }
+    working() {
+        this.$el.find('img').attr('src', this.kneeling_pose_img);
     }
 }
 
@@ -349,17 +357,18 @@ class Garage {
     }
     fix(unit) {
         if(!this.car) {
-            return;
+            return false;
         }
         if(this.car.suppliesNeeded.length !== 0) {
             if(!this.car.suppliesNeeded[0].supply.take(1)) {
                 triggerShake(this.car.suppliesNeeded[0].supply.$el);
-                return; //that supply is empty
+                return false; //that supply is empty
             }
             this.car.suppliesNeeded[0].quantity -= 1;
             if(this.car.suppliesNeeded[0].quantity === 0) {
                 this.car.suppliesNeeded.shift();
             }
+            return true;
         } else {
             this.car.progress += unit;
         }
@@ -370,6 +379,7 @@ class Garage {
             this.car.driveAway();
             this.empty();
         }
+        return true;
     }
     empty() {
         this.$el.find()
