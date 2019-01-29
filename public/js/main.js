@@ -48,13 +48,9 @@ class Wallet extends GameObject {
     constructor($parent, funds=0, saveData) {
         super();
         this.funds = funds;
-        this.$el = $(
-        `<div class="card text-white bg-success m-0.5 p-0.5" style="width: 9rem; font-size: 1em; line-height: 1;" id="wallet">
-            <div class="card-body">${funds}</div>
-        </div>`);
+        this.$el = $('#wallet');
         this.$body = this.$el.find('.card-body')
         this.loadSaveData(saveData);
-        this.attach($parent);
         this.redraw();
     }
     withdraw(cost) {
@@ -298,6 +294,7 @@ class Garage {
         }
         if(this.car.progress >= this.car.workNeeded) {
             gc.gameobjects.wallet.deposit(this.car.value);
+            gc.tallyCar();
             this.status = "leaving";
             this.car.driveAway();
             this.status = "empty";
@@ -401,6 +398,7 @@ class GameController {
     }
     loadGame(saveFile={}) {
         this.progress = 1;
+        this.carsFixed = 0;
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
         let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, LABEL_OIL, "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
@@ -444,6 +442,10 @@ class GameController {
                 this.levelUp(parseInt(lvl))
             }
         }
+    }
+    tallyCar() {
+        this.carsFixed++;
+        $('#highScore .output-value').text(this.carsFixed);
     }
 }
 
