@@ -13,7 +13,7 @@ firebase.initializeApp(config);
 let userSavesDB = firebase.database();
 
 //Internal vars
-const CAR_SPRITES = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png"];
+const CAR_SPRITES = ["carRed2_007.png", "carRed3_007.png", "carRed4_006.png", "carRed5_004.png", "carRed6_006.png", "carSilver6_007.png", "carSilver5_010.png", "carSilver4_007.png", "carSilver3_007.png", "carSilver2_008.png", "carSilver1_007.png", "carGreen6_010.png", "carGreen5_009.png", "carGreen4_010.png", "carGreen3_007.png", "carGreen2_007.png", "carGreen1_007.png", "carBlue6_010.png", "carBlue5_007.png", "carBlue4_010.png", "carBlue3_010.png", "carBlue2_009.png", "carBlue1_007.png", "carBlack6_007.png", "carBlack5_007.png", "carBlack4_008.png", "carBlack3_007.png", "carBlack2_008.png", "carBlack1_006.png", "police_SW.png", "taxi_SW.png"];
 const LABEL_OIL = "Oil";
 const LABEL_ENGINE = "Engine";
 /* Game Tuning Variables */
@@ -24,7 +24,7 @@ const OIL_COST = 10;
 const ENGINE_COST = 1000;
 const PROFIT_MARGIN = 0.1;
 const BASE_SHOP_RATE = 100;
-const MECHANIC_HIRE = 1000;
+const MECHANIC_HIRE_COST = 1000;
 
 //Abstract class so that all game objects can be guaranteed to have a common updated, redrawn interface
 class GameObject {
@@ -243,7 +243,7 @@ class VerticalSupply extends Supply {
 class MechanicUpgrade extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
-        this.$el = $(`<div class="card-body"><button type="button" class="btn btn-primary">Hire Mechanic $${cost}</button></div>`);
+        this.$el = $(`<button type="button" class="btn btn-primary">Hire Mechanic $${cost}</button>`);
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.buy(); });
@@ -257,6 +257,11 @@ class MechanicUpgrade extends Supply {
             //and put the new mechanic there
             let bob = new Mechanic($emptySlot);
             gc.gameobjects.mechanics.push(bob);
+        }
+    }
+    update() {
+        if(!$('.garage .mechanic-slot.empty-slot').length) {
+            this.$el.hide();
         }
     }
 }
@@ -489,14 +494,13 @@ class GameController {
         let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, LABEL_ENGINE, "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         engineSupply.$el.addClass('level-4');
         engineSupply.$el.hide();
-        let garage1 = new Garage($('#garages'));
-        new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE);
         //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
-        this.gameobjects.garages.push(garage1);
+        this.gameobjects.garages.push(new Garage($('#garages')));
         this.gameobjects.oilSupply = oilSupply;
         this.gameobjects.engineSupply = engineSupply;
-        this.gameobjects.queueManager = new QueueManager();
+        this.gameobjects.mechanicHire = new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE_COST);
+        // this.gameobjects.queueManager = new QueueManager();
     }
     resetDom() {
         $('.game-state div').remove();
