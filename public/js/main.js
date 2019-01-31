@@ -18,7 +18,10 @@ const LABEL_OIL = "Oil";
 const LABEL_ENGINE = "Engine";
 /* Game Tuning Variables */
 //Click Speed Related
+//Determines how fast the mechanic will "auto-click" on the car
 const MECHANIC_BASE_SPEED = 0.006;
+let mechanic_speed = MECHANIC_BASE_SPEED;
+const MECHANIC_UPGRADE_FACTOR = 1.2;
 //Economy
 const OIL_COST = 10;
 const ENGINE_COST = 1000;
@@ -241,10 +244,10 @@ class VerticalSupply extends Supply {
 }
 
 //Manages the button that will let users hire Mechanics from the Upgrade shop
-class MechanicUpgrade extends Supply {
+class MechanicHire extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
-        this.$el = $(`<button type="button" class="btn btn-primary">Hire Mechanic $${cost}</button>`);
+        this.$el = $(`<button type="button" class="btn btn-primary m-1">Hire Mechanic $${cost}</button>`);
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.buy(); });
@@ -261,8 +264,42 @@ class MechanicUpgrade extends Supply {
         }
     }
     update() {
+        //Hide the button once max mechanics have been hired
         if(!$('.garage .mechanic-slot.empty-slot').length) {
             this.$el.hide();
+        } else {
+            this.$el.show();
+        }
+    }
+}
+
+class Upgrade extends GameObject {
+    constructor($parent, $template, gameObjectKey) {
+        super();
+        this.$el = $template;
+        $parent.append(this.$el);
+        this.gameObjectKey = gameObjectKey;
+    }
+    destructor() {
+        this.$el.remove();
+        delete gc.gameobjects[this.gameObjectKey];
+    }
+}
+
+class CoffeeMachineUpgrade extends Upgrade {
+    constructor($parent, cost, gameObjectKey, unlock="level-1") {
+        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">Coffee Machine $${cost}<div class="small">Faster mechanics</div></button>`);
+        super($parent, $template, gameObjectKey);
+        let clickFunction = () => {
+            mechanic_speed *= MECHANIC_UPGRADE_FACTOR;
+            console.log("Mechanics now at speed " + mechanic_speed);
+            this.destructor();
+        };
+        this.$el.click(clickFunction);
+    }
+    update() {
+        if($('.garage .mechanic-slot:not(.empty-slot)').length) {
+            this.$el.show();
         }
     }
 }
@@ -275,8 +312,6 @@ const MECHANIC_KNEELING_RIGHT_SPRITE = "img/mechanics/1-kneel-ne.png";
 class Mechanic extends GameObject{
     constructor($parent) {
         super();
-        //Determines how fast the mechanic will "auto-click" on the car
-        this.speed = MECHANIC_BASE_SPEED;
         this.counter = 0;
         this.$el = $(`<div class="mechanic"><img class="mechanic-sprite text-right" src="${MECHANIC_IDLE_LEFT_SPRITE}"/></div>`);
         $parent.append(this.$el);
@@ -293,7 +328,7 @@ class Mechanic extends GameObject{
         //Keep a local counter to track the number of updates that pass so we can throttle the "auto-clicking"
         //to occur only after a certain number of update ticks
         this.counter++;
-        if(this.counter * this.speed >= 1) {
+        if(this.counter * mechanic_speed >= 1) {
             this.counter = 0;
             gc.gameobjects.garages[0].fix(1) ? this.working() : this.idle();
         }
@@ -390,7 +425,7 @@ class Garage {
     empty() {
         this.$el.find()
         this.car = null;
-        this.$el.find('.value').text('');
+        this.$el.find('.value').text('0');
         this.status = "empty";
     }
 }
@@ -500,7 +535,8 @@ class GameController {
         this.gameobjects.garages.push(new Garage($('#garages')));
         this.gameobjects.oilSupply = oilSupply;
         this.gameobjects.engineSupply = engineSupply;
-        this.gameobjects.mechanicHire = new MechanicUpgrade($('#upgradeShop'), 2, MECHANIC_HIRE_COST);
+        this.gameobjects.mechanicHire = new MechanicHire($('#upgradeShop'), 2, MECHANIC_HIRE_COST);
+        this.gameobjects.coffeeUpgrade = new CoffeeMachineUpgrade($('#upgradeShop'), 100, 'coffeeUpgrade');
         // this.gameobjects.queueManager = new QueueManager();
     }
     resetDom() {
@@ -614,7 +650,7 @@ $(function() {
     //Initialize the global game controller and instantiate the various game objects for gameplay
     gc.loadGame();
     //CHEAT CODE
-    // gc.gameobjects.wallet.deposit(999999);
+    gc.gameobjects.wallet.deposit(999999);
 
     //Game loop
     window.setInterval(function(){
