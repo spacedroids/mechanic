@@ -18,7 +18,7 @@ function weightedRand(spec) {
 }
 
 //Add class to $el to trigger CSS animation. Add event on animation end to remove so it can be re-triggered
-triggerShake = function($el) {
+function triggerShake($el) {
     $el.addClass('apply-shake');
     $el.on('animationend', (e) => {
         $el.removeClass("apply-shake");

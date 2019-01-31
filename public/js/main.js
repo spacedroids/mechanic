@@ -231,7 +231,7 @@ class Supply extends GameObject {
 
 //Supply items that should be rendered with a vertical progress bar
 class VerticalSupply extends Supply {
-    constructor($parent, max, cost, label, color, amount=0, saveData=0) {
+    constructor($parent, max, cost, label, color, batchPurchase, amount=0, saveData=0) {
         super(max, cost, amount);
         this.$el = $(`
         <div class="col" style="text-align: left;">
@@ -245,7 +245,7 @@ class VerticalSupply extends Supply {
             if(this.isFull()) {
                 return;
             }
-            this.buy(5);
+            this.buy(batchPurchase);
         });
     }
     redraw() {
@@ -577,8 +577,8 @@ class GameController {
         this.carsFixed = 0;
         this.resetDom();
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
-        let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, LABEL_OIL, "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
-        let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, LABEL_ENGINE, "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
+        let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, LABEL_OIL, "black", 5, 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
+        let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, LABEL_ENGINE, "grey", 1, 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
         engineSupply.$el.addClass(ENGINE_SUPPLY_UNLOCK_LEVEL);
         engineSupply.$el.hide();
         //Add the game objects to the list of objects
