@@ -257,7 +257,7 @@ class VerticalSupply extends Supply {
 class MechanicHire extends Supply {
     constructor($parent, max, cost, amount=0, saveData=0) {
         super(max, cost, amount);
-        this.$el = $(`<button type="button" class="btn btn-primary m-1">Hire Mechanic $${cost}</button>`);
+        this.$el = $(`<button type="button" class="btn btn-primary m-1 upgrade-button">Hire Mechanic $${cost}</button>`);
         this.cost = cost;
         $parent.append(this.$el);
         this.$el.click(() => { this.buy(); });
@@ -303,7 +303,7 @@ class CoffeeMachineUpgrade extends Upgrade {
     constructor($parent, cost, gameObjectKey, unlock="") {
         let title = 'Coffee Machine';
         let subTitle = 'Faster mechanics';
-        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
+        let $template = $(`<button type="button" class="btn btn-primary upgrade-button m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
         super($parent, $template, gameObjectKey);
         let clickFunction = () => {
             mechanic_speed *= MECHANIC_UPGRADE_FACTOR;
@@ -323,7 +323,7 @@ class OilSupplyUpgrade extends Upgrade {
     constructor($parent, cost, gameObjectKey, unlock="") {
         let title = 'Oil Storage';
         let subTitle = 'Hold More Oil';
-        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}">${title} $${cost}<div class="small">${subTitle}</div></button>`);
+        let $template = $(`<button type="button" class="btn btn-primary upgrade-button m-1 ${unlock}" style="text-align: center;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
         super($parent, $template, gameObjectKey);
         let clickFunction = () => {
             gc.gameobjects.oilSupply.max = Math.ceil(gc.gameobjects.oilSupply.max * SUPPLY_INCREASE_STEP);
@@ -341,7 +341,7 @@ class EngineSupplyUpgrade extends Upgrade {
     constructor($parent, cost, gameObjectKey, unlock="") {
         let title = 'Engine Storage';
         let subTitle = 'Hold More Engines';
-        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
+        let $template = $(`<button type="button" class="btn btn-primary upgrade-button m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
         super($parent, $template, gameObjectKey);
         let clickFunction = () => {
             gc.gameobjects.engineSupply.max = Math.ceil(gc.gameobjects.engineSupply.max * SUPPLY_INCREASE_STEP);

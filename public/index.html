@@ -76,14 +76,19 @@
          </div>
       </div>
       <div class="row">
-         <div class="col-sm">
+         <!-- <div class="col-sm">
             <div class="game-state card text-center m-1 p-1 level-3" style="display: none;" id="upgrades">
                <h5 class="card-title">Upgrades</h5>
             </div>
-         </div>
+         </div> -->
          <div class="col-sm">
-            <div class="game-state card text-center m-1 p-1 level-3" style="display: none;" id="upgradeShop">
-               <h5 class="card-title">Upgrade Shop</h5>
+            <div class="card text-center m-1 p-1 level-3" style="display: none;">
+               <div class="card-body p-1">
+                  <h5 class="card-title">Upgrade Shop</h5>
+                  <div class="row">
+                     <div class="col"></div><div class="col game-state" id="upgradeShop"></div><div class="col"></div>
+                  </div>
+               </div>
             </div>
          </div>
       </div>
@@ -112,7 +117,10 @@
       </div>
       </div>
    </div>
-   <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script>
+   <!--Dev Lib <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase.js"></script> -->
+   <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-auth.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"

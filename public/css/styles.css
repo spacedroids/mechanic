@@ -27,6 +27,9 @@ body {
 .supply-stack {
 	cursor: pointer;
 }
+.upgrade-button {
+	width: 20rem;
+}
 .progress-bar-vertical {
 	width: 40px;
 	min-height: 100px;
