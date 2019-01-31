@@ -23,11 +23,17 @@ const MECHANIC_BASE_SPEED = 0.006;
 let mechanic_speed = MECHANIC_BASE_SPEED;
 const MECHANIC_UPGRADE_FACTOR = 1.2;
 //Economy
-const OIL_COST = 10;
+const OIL_COST = 5;
 const ENGINE_COST = 1000;
 const PROFIT_MARGIN = 0.1;
-const BASE_SHOP_RATE = 100;
+const BASE_SHOP_RATE = 30;
 const MECHANIC_HIRE_COST = 1000;
+const BASE_UPGRADE_COST = 500;
+const XS_UPGRADE_COST = BASE_UPGRADE_COST * 1;
+const S_UPGRADE_COST = BASE_UPGRADE_COST * 5;
+const M_UPGRADE_COST = BASE_UPGRADE_COST * 10;
+const L_UPGRADE_COST = BASE_UPGRADE_COST * 50;
+const XL_UPGRADE_COST = BASE_UPGRADE_COST * 100;
 
 //Abstract class so that all game objects can be guaranteed to have a common updated, redrawn interface
 class GameObject {
@@ -261,6 +267,9 @@ class MechanicHire extends Supply {
             //and put the new mechanic there
             let bob = new Mechanic($emptySlot);
             gc.gameobjects.mechanics.push(bob);
+            //Increase cost of next mechanic
+            this.cost *= 3;
+            this.$el.text(`Hire Mechanic $${this.cost}`);
         }
     }
     update() {
@@ -536,7 +545,7 @@ class GameController {
         this.gameobjects.oilSupply = oilSupply;
         this.gameobjects.engineSupply = engineSupply;
         this.gameobjects.mechanicHire = new MechanicHire($('#upgradeShop'), 2, MECHANIC_HIRE_COST);
-        this.gameobjects.coffeeUpgrade = new CoffeeMachineUpgrade($('#upgradeShop'), 100, 'coffeeUpgrade');
+        this.gameobjects.coffeeUpgrade = new CoffeeMachineUpgrade($('#upgradeShop'), XS_UPGRADE_COST, 'coffeeUpgrade');
         // this.gameobjects.queueManager = new QueueManager();
     }
     resetDom() {
