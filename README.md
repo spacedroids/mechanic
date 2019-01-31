@@ -1,12 +1,6 @@
 # Mechanic
 A clicker game.
 
-Agenda:
-What I was planning to do
-Brief demo
-Challenge to solve
-What I'd do next
-
 ## Brief Overview
 ### Game Loop
 At the bottom of main.js you'll find this loop:
