@@ -34,6 +34,9 @@ const S_UPGRADE_COST = BASE_UPGRADE_COST * 5;
 const M_UPGRADE_COST = BASE_UPGRADE_COST * 10;
 const L_UPGRADE_COST = BASE_UPGRADE_COST * 50;
 const XL_UPGRADE_COST = BASE_UPGRADE_COST * 100;
+//Other Upgrade Params
+const SUPPLY_INCREASE_STEP = 1.2;
+const ENGINE_SUPPLY_UNLOCK_LEVEL = 'level-4'
 
 //Abstract class so that all game objects can be guaranteed to have a common updated, redrawn interface
 class GameObject {
@@ -188,6 +191,7 @@ class Supply extends GameObject {
         super();
         this.amount = amount;
         this.max = max;
+        this.maxUpgrade = this.max * 10;
         this.cost = cost;
     }
     //Buy more units and add them to this supply
@@ -296,8 +300,10 @@ class Upgrade extends GameObject {
 }
 
 class CoffeeMachineUpgrade extends Upgrade {
-    constructor($parent, cost, gameObjectKey, unlock="level-1") {
-        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">Coffee Machine $${cost}<div class="small">Faster mechanics</div></button>`);
+    constructor($parent, cost, gameObjectKey, unlock="") {
+        let title = 'Coffee Machine';
+        let subTitle = 'Faster mechanics';
+        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
         super($parent, $template, gameObjectKey);
         let clickFunction = () => {
             mechanic_speed *= MECHANIC_UPGRADE_FACTOR;
@@ -310,6 +316,42 @@ class CoffeeMachineUpgrade extends Upgrade {
         if($('.garage .mechanic-slot:not(.empty-slot)').length) {
             this.$el.show();
         }
+    }
+}
+
+class OilSupplyUpgrade extends Upgrade {
+    constructor($parent, cost, gameObjectKey, unlock="") {
+        let title = 'Oil Storage';
+        let subTitle = 'Hold More Oil';
+        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}">${title} $${cost}<div class="small">${subTitle}</div></button>`);
+        super($parent, $template, gameObjectKey);
+        let clickFunction = () => {
+            gc.gameobjects.oilSupply.max = Math.ceil(gc.gameobjects.oilSupply.max * SUPPLY_INCREASE_STEP);
+            cost *= 2;
+            this.$el.text(`${title} $${cost}`);
+            if(gc.gameobjects.oilSupply.max >= gc.gameobjects.oilSupply.maxUpgrade) {
+                this.destructor();
+            }
+        };
+        this.$el.click(clickFunction);
+    }
+}
+
+class EngineSupplyUpgrade extends Upgrade {
+    constructor($parent, cost, gameObjectKey, unlock="") {
+        let title = 'Engine Storage';
+        let subTitle = 'Hold More Engines';
+        let $template = $(`<button type="button" class="btn btn-primary m-1 ${unlock}" style="display: none;">${title} $${cost}<div class="small">${subTitle}</div></button>`);
+        super($parent, $template, gameObjectKey);
+        let clickFunction = () => {
+            gc.gameobjects.engineSupply.max = Math.ceil(gc.gameobjects.engineSupply.max * SUPPLY_INCREASE_STEP);
+            cost *= 2;
+            this.$el.text(`${title} $${cost}`);
+            if(gc.gameobjects.engineSupply.max >= gc.gameobjects.engineSupply.maxUpgrade) {
+                this.destructor();
+            }
+        };
+        this.$el.click(clickFunction);
     }
 }
 
@@ -537,7 +579,7 @@ class GameController {
         let wallet = new Wallet($('#header'), 0, saveFile.wallet ? saveFile.wallet : 0);
         let oilSupply = new VerticalSupply($('#supplies'), 10, OIL_COST, LABEL_OIL, "black", 5, saveFile.oilSupply ? saveFile.oilSupply : 0);
         let engineSupply = new VerticalSupply($('#supplies'), 1, ENGINE_COST, LABEL_ENGINE, "grey", 1, saveFile.engineSupply ? saveFile.engineSupply : 0);
-        engineSupply.$el.addClass('level-4');
+        engineSupply.$el.addClass(ENGINE_SUPPLY_UNLOCK_LEVEL);
         engineSupply.$el.hide();
         //Add the game objects to the list of objects
         this.gameobjects.wallet = wallet;
@@ -546,6 +588,9 @@ class GameController {
         this.gameobjects.engineSupply = engineSupply;
         this.gameobjects.mechanicHire = new MechanicHire($('#upgradeShop'), 2, MECHANIC_HIRE_COST);
         this.gameobjects.coffeeUpgrade = new CoffeeMachineUpgrade($('#upgradeShop'), XS_UPGRADE_COST, 'coffeeUpgrade');
+        this.gameobjects.engineSupplyUpgrade = new EngineSupplyUpgrade($('#upgradeShop'), S_UPGRADE_COST, 'engineSupplyUpgrade', ENGINE_SUPPLY_UNLOCK_LEVEL);
+        this.gameobjects.oilSupplyUpgrade = new OilSupplyUpgrade($('#upgradeShop'), XS_UPGRADE_COST, 'oilSupplyUpgrade');
+        
         // this.gameobjects.queueManager = new QueueManager();
     }
     resetDom() {
@@ -659,7 +704,7 @@ $(function() {
     //Initialize the global game controller and instantiate the various game objects for gameplay
     gc.loadGame();
     //CHEAT CODE
-    gc.gameobjects.wallet.deposit(999999);
+    // gc.gameobjects.wallet.deposit(999999);
 
     //Game loop
     window.setInterval(function(){
