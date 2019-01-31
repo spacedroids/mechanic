@@ -58,6 +58,7 @@ class Wallet extends GameObject {
             this.funds = this.funds - cost;
             return true;
         } else {
+            triggerShake(this.$el);
             return false;
         }
     }
