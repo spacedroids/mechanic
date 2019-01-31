@@ -556,18 +556,55 @@ const createSaveFile = function(wallet, oilSupply) {
     }
 }
 
+function showSuccessMessage(msg) {
+    let alert = $(`<div class="alert alert-success" role="alert">${msg}</div>`);
+    $('main').prepend(alert);
+    setTimeout(function() {
+        alert.remove();
+    }, 4000);
+}
+
+function showErrorMessage(msg) {
+    let alert = $(`<div class="alert alert-danger" role="alert">${msg}</div>`);
+    $('main').prepend(alert);
+    setTimeout(function() {
+        alert.remove();
+    }, 4000);
+}
+
 //Create the gloabl game controller object
 let gc = new GameController();
 
+//To store user info from firebase login
+let loggedInUser = null;
+
 //Document ready and main execution
 $(function() {
+    //Enable auth
+    firebase.auth().signInAnonymously().catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        showErrorMessage("Error: unable to sign in. Sorry, you won't be able to save your game. :(");
+    });
+
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            // User is signed in.
+            var isAnonymous = user.isAnonymous;
+            var uid = user.uid;
+            console.log("Signed in: " + user.uid);
+            loggedInUser = user;
+        }
+    });
+
     $('.save-game').click(function() {
-        let userSaveBucket = userSavesDB.ref('test_user2');
+        let userSaveBucket = userSavesDB.ref('user/'+loggedInUser.uid);
         userSaveBucket.set(createSaveFile(gc.gameobjects.wallet, gc.gameobjects.oilSupply, gc.gameobjects.engineSupply));
+        showSuccessMessage("Game saved.");
     });
     $('.load-game').click(function() {
-        let userSaveBucket = userSavesDB.ref('test_user2');
-        userSavesDB.ref('test_user2').once('value').then(function(saveFile) {
+        userSavesDB.ref('user/'+loggedInUser.uid).once('value').then(function(saveFile) {
             gc = new GameController();
             gc.loadGame(saveFile.val());
         });
